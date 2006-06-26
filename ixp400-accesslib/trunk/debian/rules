@@ -57,8 +57,8 @@ install: build
 	dh_testroot
 	dh_clean -k
 	dh_installdirs -i usr/src/modules/$(PROJECT)/debian
-	tar -v -c --exclude ".pc" --exclude "debian" --exclude "*-stamp" \
-	  --exclude "ixp_osal/os/vxworks" . \
+	tar -c --exclude ".pc" --exclude "debian" --exclude "*-stamp" \
+	  --exclude ".svn" --exclude "ixp_osal/os/vxworks" . \
 	  | tar x -C debian/$(PROJECT)-source/usr/src/modules/$(PROJECT)
 	cp -a debian/compat debian/*modules.in debian/rules debian/copyright debian/changelog debian/$(PROJECT)-source/usr/src/modules/$(PROJECT)/debian
 	cd debian/$(PROJECT)-source/usr/src && tar c modules | bzip2 -9 > $(PROJECT).tar.bz2 && rm -rf modules
