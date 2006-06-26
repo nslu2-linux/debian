@@ -1,0 +1,17 @@
+Source: ixp400-eth
+Section: misc
+Priority: optional
+Maintainer: Marcus Better <marcus@better.se>
+Build-Depends: debhelper (>= 5.0.0), quilt (>= 0.40)
+Build-Depends-Indep: dh-kpatches, bzip2
+Standards-Version: 3.7.2
+
+Package: ixp400-eth-source
+Architecture: all
+Depends: debhelper (>= 5.0.0), module-assistant, bzip2, ixp400-accesslib-dev
+Description: Intel IXP400 ethernet device driver
+ This package provides support for the ethernet ports on the Intel
+ IXP4xx line of microprocessors, for example the one found on the
+ Linksys NSLU2.
+ .
+ This package contains the source code for the kernel module.

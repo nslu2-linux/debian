@@ -1,0 +1,99 @@
+#!/usr/bin/make -f
+
+include /usr/share/quilt/quilt.make
+
+PROJECT=	ixp400-eth
+
+IX_TARGET=	linuxle
+LINUX_CROSS_COMPILE=arm-linux-gnu-
+
+IX_CFLAGS=	-DIX_UTOPIAMODE=0 -DIX_MPHYSINGLEPORT=1 \
+		-DIX_DEVICE_NAME_ETH=1 -DIX_COMPONENT_NAME=-1 \
+		-DCONFIG_IXP400_ETH_NPEB_ONLY=1
+
+export IX_TARGET LINUX_CROSS_COMPILE IX_CFLAGS
+
+IXP4XX_CSR_SYMVERS = "${STAGING_KERNEL_DIR}/ixp400-csr.symvers"
+
+configure: configure-stamp
+configure-stamp: patch
+	dh_testdir
+	touch configure-stamp
+
+build-arch: configure-stamp build-arch-stamp
+build-arch-stamp:
+	dh_testdir
+	touch build-arch-stamp
+
+build-indep:  configure-stamp build-indep-stamp
+build-indep-stamp:
+	dh_testdir
+	touch build-indep-stamp
+
+build: build-arch build-indep
+
+clean: clean-patched unpatch
+clean-patched:
+	dh_testdir
+	dh_testroot
+	rm -f build-arch-stamp build-indep-stamp configure-stamp
+	dh_clean
+
+install: DH_OPTIONS=
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs -i usr/src/modules/$(PROJECT)/debian
+	tar -v -c --exclude ".pc" --exclude "debian" --exclude "*-stamp" . \
+	  | tar x -C debian/$(PROJECT)-source/usr/src/modules/$(PROJECT)
+	cp -a debian/compat debian/*modules.in debian/rules debian/copyright debian/changelog debian/$(PROJECT)-source/usr/src/modules/$(PROJECT)/debian
+	cd debian/$(PROJECT)-source/usr/src && tar c modules | bzip2 -9 > $(PROJECT).tar.bz2 && rm -rf modules
+	dh_install
+
+binary-indep: build install
+	dh_testdir -i
+	dh_testroot -i
+	dh_installchangelogs -i
+	dh_installdocs -i
+	dh_link -i
+	dh_compress -i
+	dh_fixperms -i
+	dh_installdeb -i
+	dh_shlibdeps -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+binary-arch: build install
+
+binary: binary-indep binary-arch
+.PHONY: build build-arch build-indep clean clean-patched binary-indep binary-arch binary install configure binary-modules kdist kdist_config kdist_image kdist_clean
+
+# module-assistant stuff
+PACKAGE = $(PROJECT)-module
+MA_DIR ?= /usr/share/modass
+-include $(MA_DIR)/include/generic.make
+-include $(MA_DIR)/include/common-rules.make
+
+kdist_clean: prep-deb-files
+	dh_clean
+	$(MAKE) clean
+
+kdist_config: prep-deb-files
+kdist_configure: kdist_config
+
+binary-modules: kdist_config
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	$(MAKE) $(MFLAGS)
+	install -m644 -b -D ixp400_eth.ko $(CURDIR)/debian/$(PKGNAME)/lib/modules/$(KVERS)/ixp400/ixp400_eth.ko
+	dh_installdocs 
+	dh_installchangelogs
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol -- -v$(VERSION)
+	dh_md5sums
+	dh_builddeb --destdir=$(DEB_DESTDIR)

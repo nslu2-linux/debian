@@ -1,0 +1,30 @@
+Intel IXP4xx ethernet device driver for Debian
+----------------------------------------------
+
+o How do i build this module the debian way?
+
+- Building with module-assistant
+
+$ m-a a-i someproject
+
+(for kernel source or headers in non-standard directory, add the option 
+-k /path/to/kernel/source with the correct path)
+
+- Building with make-kpkg
+
+$ cd /usr/src/
+$ ta jxvf someproject.tar.bz2
+$ cd /usr/src/kernel-source-2.6.9
+$ make-kpkg --added-modules=someproject modules
+
+- Building without make-kpkg
+
+$ cd /usr/src/
+$ tar jxvf someproject.tar.bz2
+$ cd modules/someproject
+$ fakeroot debian/rules kdist_image
+
+(no fakeroot needed if you run this as root)
+
+
+ -- Marcus Better <marcus@better.se>, Wed, 21 Jun 2006 22:39:09 +0200
