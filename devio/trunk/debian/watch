@@ -1,0 +1,4 @@
+version=3
+
+http://qa.debian.org/watch/sf.php?project=devio \
+    devio-(.*)\.tar\.gz
