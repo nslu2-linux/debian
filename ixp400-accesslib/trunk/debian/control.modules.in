@@ -1,0 +1,18 @@
+Source: ixp400-accesslib
+Section: misc
+Priority: optional
+Maintainer: Marcus Better <marcus@better.se>
+Build-Depends: debhelper (>> 5.0.0), bzip2
+Standards-Version: 3.7.2
+
+Package: ixp400-accesslib-module-_KVERS_
+Architecture: arm
+Recommends: linux-image-_KVERS_
+Provides: ixp400-accesslib-module
+Description:  Linux kernel module for the Intel IXP400 hardware access library
+ This package provides support for microprocessors in the Intel IXP400
+ product line.
+ .
+ If you compiled a custom kernel, you will most likely need to compile
+ a custom version of this module as well. The ixp400-accesslib-source
+ package has been provided for this purpose.

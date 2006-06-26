@@ -1,0 +1,44 @@
+IXP400 hardware access library for Debian
+-----------------------------------------
+
+This package contains support software for Intel IXP400 network
+processors. It is intended for running Debian on the Linksys NSLU2.
+
+The software requires additional microcode, which is not
+available in source form. You can download it from
+
+ http://www.intel.com/design/network/products/npfamily/ixp400_current.htm
+
+You need the NPE Microcode version 2.1 (without crypto). This gives
+you a file named IPL_ixp400NpeLibrary-2_1.zip.
+
+
+Cross-compiling the ixp400 module
+---------------------------------
+
+The module can be cross-compiled, in fact this is the only way I have
+tried.
+
+1. Get a cross-toolchain for the ARM architecture. I followed the
+instructions at
+    http://psas.pdx.edu/DebianCrossCompilerHowto
+substituting "arm" instead of "powerpc" throughout the document.
+
+2. Unpack the module sources and the NPE microcode:
+
+  $ cd /usr/src                (or choose another directory)
+  $ tar xjf /usr/src/ixp400-accesslib.tar.bz2
+  $ cd modules/ixp400-accesslib
+  $ unzip ~/IPL_ixp400NpeLibrary-2_1.zip
+
+3. Build the module with make-kpkg or module-assistant.
+
+ (a) Building with make-kpkg
+
+  $ cd /usr/src/
+  $ cd /usr/src/linux-source-2.6.16
+  $ make-kpkg --arch=arm --cross-compile=arm-linux-gnu --added-modules=ixp400-accesslib modules_image
+
+ (b) Building with module-assistant is not tested yet!
+
+ -- Marcus Better <marcus@better.se>, Thu, 22 Jun 2006 09:39:31 +0200
