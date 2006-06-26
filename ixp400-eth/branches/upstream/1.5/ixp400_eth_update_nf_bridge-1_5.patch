@@ -1,0 +1,20 @@
+--- ixp400_eth.c	2005-07-30 20:46:32.000000000 +0800
++++ ixp400_eth.c.new	2005-08-10 17:08:04.000000000 +0800
+@@ -96,7 +96,7 @@
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Intel Corporation");
+ #define MODULE_NAME "ixp400_eth"
+-#define MOD_VERSION "1.5"
++#define MOD_VERSION "1.5A"
+ 
+ /* Module parameters */
+ static int npe_learning = 1;      /* default : NPE learning & filtering enable */
+@@ -930,6 +930,8 @@
+ #ifdef CONFIG_NETFILTER
+ #if defined(CONFIG_BRIDGE) || defined(CONFIG_BRIDGE_MODULE)
+ /* We need to free the memory attached to the nf_bridge pointer to avoid a memory leak */
++	nf_bridge_put(skb->nf_bridge);
++	skb->nf_bridge = NULL;
+ 
+ #endif
+ #endif /* CONFIG_NETFILTER */
