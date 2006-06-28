@@ -1,0 +1,16 @@
+ixp_osal/Makefile.patch -p0
+ixp_osal/2.6.patch -p0
+ixp_osal/invalidate-cache.patch -p0
+ixp_osal/ixp4xx-header.patch -p0
+ixp_osal/le.patch -p0
+ixp_osal/assert.patch -p0
+xscale_sw/Makefile.patch -p0
+xscale_sw/ixethdb-header.patch -p0
+xscale_sw/bit-macro.patch -p0
+xscale_sw/ixnpemhconfigisr-is-private.patch -p0
+xscale_sw/le.patch -p0
+xscale_sw/mii-debug.patch -p0
+xscale_sw/rtl8201-support.patch -p0
+xscale_sw/gcc4.patch -p0
+xscale_sw/oe-makefile.patch -p0
+xscale_sw/livelock.patch -p0

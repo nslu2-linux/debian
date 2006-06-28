@@ -1,0 +1,3 @@
+ixp_osal/include/*			/usr/include/ixp4xx/osal
+ixp_osal/os/linux/include/*		/usr/include/ixp4xx/osal/os/linux
+ixp400_xscale_sw/src/include/*		/usr/include/ixp4xx/csr/

@@ -1,0 +1,33 @@
+Instructions for the Subversion repository
+------------------------------------------
+
+Since the upstream sources are distributed as zip archives, we
+repackage them into orig.tar.gz files. These tarballs are kept in the
+svn repository. The sources are built with svn-buildpackage.
+
+To facilitate this, the svn repository has the following layout (using
+ixp400-eth as an example).
+
+  ixp400-eth/trunk/
+    ixp400-eth_2.1.orig.tar.gz  (upstream tarball)
+    ixp400-eth/                 (subdirectory holding Debian source)
+
+  ixp400-eth/branches/upstream/current/ixp400-eth
+  ixp400-eth/branches/upstream/$VERSION/ixp400-eth
+    Hold upstream sources.
+
+  ixp400-eth/tags/2.1-1/        (Debian release snapshots)
+    ixp400-eth_2.1.orig.tar.gz  (upstream tarball)
+    ixp400-eth/                 (snapshot of Debian sources for a release)
+
+(The layout above is relative to
+  https://svn.nslu2-linux.org/svnroot/debian )
+
+The file debian/svn-deblayout is used to tell svn-buildpackage about
+this layout.
+
+To work on the trunk, do
+  $ svn checkout https://svn.nslu2-linux.org/svnroot/debian/ixp400-eth/trunk
+  $ cd trunk/ixp400-eth
+  $ svn-buildpackage
+      (output will be in ../../build-area)

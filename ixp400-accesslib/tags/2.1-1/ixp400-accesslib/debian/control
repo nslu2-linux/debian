@@ -1,0 +1,26 @@
+Source: ixp400-accesslib
+Section: misc
+Priority: optional
+Maintainer: Marcus Better <marcus@better.se>
+Build-Depends: debhelper (>= 5.0.0), quilt (>= 0.40)
+Build-Depends-Indep: dh-kpatches, bzip2
+Standards-Version: 3.7.2
+
+Package: ixp400-accesslib-source
+Architecture: all
+Depends: debhelper (>= 5.0.0), module-assistant, bzip2
+Description: Intel IXP400 hardware access library
+ This package provides support for microprocessors in the Intel IXP400
+ product line. It is intended for use mainly on the Linksys NSLU2.
+ .
+ This package contains the source code for the kernel module.
+
+Package: ixp400-accesslib-dev
+Architecture: all
+Depends: debhelper (>= 5.0.0)
+Description: Include files for the Intel IXP400 hardware access library
+ This package provides support for microprocessors in the Intel IXP400
+ product line. It is intended for use mainly on the Linksys NSLU2.
+ .
+ This package contains the header files required to compile programs
+ using this library.
