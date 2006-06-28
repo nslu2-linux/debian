@@ -1,0 +1,145 @@
+diff -Naur old/Documentation/Configure.help new/Documentation/Configure.help
+--- old/Documentation/Configure.help	2005-07-08 14:46:50.000000000 +0800
++++ new/Documentation/Configure.help	2005-07-08 14:42:02.000000000 +0800
+@@ -13070,6 +13070,79 @@
+   <file:Documentation/modules.txt>.
+   The module will be called de620.o.
+ 
++IXP400 Ethernet Device support
++CONFIG_IXP400_ETH
++  If you select M here, the Intel IXP400 Ethernet driver will be
++  compiled as part of the build.
++ 
++  To enable this option you must enable 'IXP400 Access Library' in the
++  'System Type' section.
++ 
++  In order for the driver to build correctly you must set up some
++  environment variables before building the kernel. See the README
++  files that accompany the IXP400 software or Linux Ethernet Driver
++  distribution for details.
++ 
++  Note that this driver is Intel proprietary code and must be obtained
++  from Intel Corp. See the README files that accompany the IXP400
++  software or Linux Ethernet Driver distribution for details.
++ 
++  The driver can be compiled only as a module, as linking it
++  statically into the kernel would violate the GPL. The module will be
++  called ixp400_eth.o
++ 
++  Select M if you have the IXP400 ethernet driver source code and wish
++  to include it in your build.
++
++IXP400 Ethernet Device Driver NPE support
++CONFIG_IXP400_ETH_ALL
++ If you select 'All NPEs' option here, the Intel IXP400 Ethernet driver
++ will be compiled to configure all Ethernet NPEs and map "ixp0" device
++ to Ethernet NPE B and "ixp1" device to Ethernet NPE C
++ 
++ If you select 'NPEB-only' option here, the Intel IXP400 Ethernet driver
++ will be compiled to map "ixp0" device to Ethernet NPE B.
++ 
++ If you select 'NPEC-only' option here, the Intel IXP400 Ethernet driver
++ will be compiled to map "ixp0" device to Ethernet NPE C.
++ 
++ See the README files that accompany the IXP400
++ software or Linux Ethernet Driver distribution for details.
++ 
++IXP400 Ethernet Device Driver Fast Skb Recycling support
++CONFIG_IXP400_ETH_SKB_RECYCLE
++ If you select Y here, the Intel IXP400 Ethernet driver will be
++ compiled to internally recycle skbufs.
++ 
++ IMPORTANT: This option, if enabled, may NOT work with some
++ patched kernels.
++ 
++ If unsure select N here.
++ 
++ See the README files that accompany the IXP400
++ software or Linux Ethernet Driver distribution for details.
++ 
++IXP400 Ethernet Device Driver Fast QDisc support
++CONFIG_IXP400_ETH_QDISC_ENABLED
++ If you select Y here, the Intel IXP400 Ethernet driver will be
++ compiled to internally use its own queueing discipline (qdisc).
++ 
++ IMPORTANT: This option may NOT work with some debug tools or
++ some kernel features.
++ 
++ If unsure select N here.
++ 
++ See the README files that accompany the IXP400
++ software or Linux Ethernet Driver distribution for details.
++
++IXP400 Ethernet Device Driver NAPI support
++CONFIG_IXP400_NAPI
++ If you select Y here, the Intel IXP400 Ethernet driver will be
++ compiled to use the Linux kernel's NAPI polling interface.
++ 
++ See the README files that accompany the IXP400
++ software or Linux Ethernet Driver distribution for details.
++
+ Token Ring driver support
+ CONFIG_TR
+   Token Ring is IBM's way of communication on a local network; the
+diff -Naur old/drivers/net/Config.in new/drivers/net/Config.in
+--- old/drivers/net/Config.in	2005-07-08 14:46:18.000000000 +0800
++++ new/drivers/net/Config.in	2005-07-08 14:43:54.000000000 +0800
+@@ -314,6 +314,16 @@
+    if [ "$CONFIG_RAINIER" = "y" -o "$CONFIG_POWERK2" = "y" ]; then
+       dep_tristate 'IBM NPNet NP4GS3 Backplane Networking' CONFIG_NPNET $CONFIG_PCI
+    fi
++   dep_tristate 'Intel IXP400 Ethernet Device support' CONFIG_IXP400_ETH $CONFIG_NET_ETHERNET m
++   if [ "$CONFIG_IXP400_ETH" = "m" ]; then
++        choice '        Intel IXP400 Ethernet Device Driver NPE support ' \
++          "All_NPEs CONFIG_IXP400_ETH_ALL \
++           NPEB-only CONFIG_IXP400_ETH_NPEB_ONLY \
++           NPEC-only CONFIG_IXP400_ETH_NPEC_ONLY" All_NPEs
++        bool '  Intel IXP400 Ethernet Device Driver Fast Skb Recycling support ' CONFIG_IXP400_ETH_SKB_RECYCLE
++        bool '  Intel IXP400 Ethernet Device Driver Fast QDisc support ' CONFIG_IXP400_ETH_QDISC_ENABLED
++        bool '  Intel IXP400 Ethernet Device Driver NAPI support ' CONFIG_IXP400_NAPI
++   fi
+ fi
+ 
+ endmenu
+diff -Naur old/drivers/net/Makefile new/drivers/net/Makefile
+--- old/drivers/net/Makefile	2005-07-08 14:46:09.000000000 +0800
++++ new/drivers/net/Makefile	2005-07-08 14:44:24.000000000 +0800
+@@ -268,6 +268,38 @@
+ mod-subdirs     +=	xilinx_enet
+ subdir-$(CONFIG_XILINX_ENET) += xilinx_enet
+ obj-$(CONFIG_XILINX_ENET) += xilinx_enet/xilinx_enet.o
++OSAL_DIR := $(IX_XSCALE_SW)/../ixp_osal
++CFLAGS_ixp400_eth.o = -DWall \
++          -I$(IX_XSCALE_SW)/src/include \
++          -I$(OSAL_DIR)/ \
++          -I$(OSAL_DIR)/os/linux/include/ \
++          -I$(OSAL_DIR)/os/linux/include/modules/ \
++          -I$(OSAL_DIR)/os/linux/include/modules/ioMem/ \
++          -I$(OSAL_DIR)/os/linux/include/modules/core/ \
++          -I$(OSAL_DIR)/os/linux/include/modules/bufferMgt/ \
++          -I$(OSAL_DIR)/os/linux/include/core/  \
++          -I$(OSAL_DIR)/os/linux/include/platforms/ \
++          -I$(OSAL_DIR)/os/linux/include/platforms/ixp400/ \
++          -I$(OSAL_DIR)/os/linux/include/platforms/ixp400/ixp425 \
++          -I$(OSAL_DIR)/os/linux/include/platforms/ixp400/ixp465 \
++          -I$(OSAL_DIR)/os/linux/include/core/ \
++          -I$(OSAL_DIR)/include/ \
++          -I$(OSAL_DIR)/include/modules/ \
++          -I$(OSAL_DIR)/include/modules/bufferMgt/ \
++          -I$(OSAL_DIR)/include/modules/ioMem/ \
++          -I$(OSAL_DIR)/include/modules/core/ \
++          -I$(OSAL_DIR)/include/platforms/ \
++          -I$(OSAL_DIR)/include/platforms/ixp400/ \
++          -I$(OSAL_DIR)/include/platforms/ixp400/ixp425 \
++          -I$(OSAL_DIR)/include/platforms/ixp400/ixp465
++
++ifeq ($(CONFIG_ARCH_IXDP465),y)
++CFLAGS_ixp400_eth.o += -D__ixp46X
++else
++CFLAGS_ixp400_eth.o += -D__ixp42X
++endif
++
++obj-$(CONFIG_IXP400_ETH) += ixp400_eth.o
+ 
+ mod-subdirs += xilinx_gige
+ subdir-$(CONFIG_XILINX_GIGE) += xilinx_gige

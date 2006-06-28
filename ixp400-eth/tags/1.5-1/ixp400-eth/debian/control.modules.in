@@ -1,0 +1,19 @@
+Source: ixp400-eth
+Section: misc
+Priority: optional
+Maintainer: Marcus Better <marcus@better.se>
+Build-Depends: debhelper (>> 5.0.0), bzip2
+Standards-Version: 3.7.2
+
+Package: ixp400-eth-module-_KVERS_
+Architecture: arm
+Recommends: linux-image-_KVERS_
+Provides: ixp400-eth-module
+Description:  Linux kernel module for the Intel IXP400 ethernet device driver
+ This package provides support for the ethernet ports on the Intel
+ IXP4xx line of microprocessors, for example the one found on the
+ Linksys NSLU2.
+ .
+ If you compiled a custom kernel, you will most likely need to compile
+ a custom version of this module as well. The ixp400-eth-source
+ package has been provided for this purpose.
