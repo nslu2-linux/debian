@@ -1,30 +1,26 @@
 Intel IXP4xx ethernet device driver for Debian
 ----------------------------------------------
 
-o How do i build this module the debian way?
-
-- Building with module-assistant
-
-$ m-a a-i someproject
-
-(for kernel source or headers in non-standard directory, add the option 
--k /path/to/kernel/source with the correct path)
-
-- Building with make-kpkg
-
-$ cd /usr/src/
-$ ta jxvf someproject.tar.bz2
-$ cd /usr/src/kernel-source-2.6.9
-$ make-kpkg --added-modules=someproject modules
-
-- Building without make-kpkg
-
-$ cd /usr/src/
-$ tar jxvf someproject.tar.bz2
-$ cd modules/someproject
-$ fakeroot debian/rules kdist_image
-
-(no fakeroot needed if you run this as root)
+This package contains the driver for the ethernet interface found on
+Intel IXP400 network processors. It is intended for running Debian on
+the Linksys NSLU2.
 
 
- -- Marcus Better <marcus@better.se>, Wed, 21 Jun 2006 22:39:09 +0200
+Cross-compiling the ixp400-eth module
+-------------------------------------
+
+The module can be cross-compiled, in fact native compiling is probably
+broken at the moment (but this will be fixed soon).
+
+First you need to compile the ixp400 module from the
+ixp400-accesslib-source package. You also need to install the
+ixp400-accesslib-dev package. Both modules can be built at the same
+time with make-kpkg:
+
+  $ cd /usr/src/
+  $ cd /usr/src/linux-source-2.6.16
+  $ make-kpkg --arch=arm --cross-compile=arm-linux-gnu --added-modules=ixp400-accesslib,ixp400-eth modules_image
+
+Building with module-assistant is not tested yet!
+
+ -- Marcus Better <marcus@better.se>, Wed, 28 Jun 2006 16:43:22 +0200
