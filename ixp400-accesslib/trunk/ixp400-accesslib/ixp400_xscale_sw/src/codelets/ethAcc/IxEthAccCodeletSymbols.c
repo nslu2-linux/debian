@@ -86,6 +86,8 @@ MODULE_PARM_DESC(outPort, "EthAcc Codelet output port selection for tests\n");
 DECLARE_MUTEX_LOCKED(__codlet_getchar);
 DECLARE_MUTEX_LOCKED(__codlet_end);
 
+IxOsalThread tid;
+
 void ixEthAccCodelet_wait(void)
 {
     /* this function waits until themutex is unlocked by
@@ -94,11 +96,10 @@ void ixEthAccCodelet_wait(void)
     down(&__codlet_getchar);
 }
 
-static int operation_func(void *unused)
+static void operation_func(void *unused)
 {
     ixEthAccCodeletMain(operationType,inPort,outPort);
     up(&__codlet_end);
-    return 0;
 }
 
 static int __init ethAccCodelet_init_module(void)
@@ -121,19 +122,25 @@ static int __init ethAccCodelet_init_module(void)
         printk("\n           %d = Eth DB Learning", IX_ETHACC_CODELET_ETH_LEARNING);
         printk("\n           %d = Bridge + WiFi header conversion", IX_ETHACC_CODELET_BRIDGE_WIFI);
         printk("\n");
-        return 1;
+        return -EINVAL;
     }
 
-    kernel_thread(operation_func, NULL, CLONE_SIGHAND);
+    ixOsalThreadCreate(&tid, NULL, operation_func, NULL);
+    ixOsalThreadStart(&tid);
+
     return 0;
 }
 
-static void __init ethAccCodelet_cleanup_module(void)
+static void __exit ethAccCodelet_cleanup_module(void)
 {
     ixEthAccDataPlaneShow();
     up(&__codlet_getchar);
     down(&__codlet_end);
     ixEthAccCodeletUninit();
+    /* 
+     * We do not need to call ixOsalThreadKill here because the thread will
+     * exit on ixEthAccCodeletUninit() when the mutex unlocked.
+     */
     printk("Unload Codelet: Ethernet Access Codelet.\n");
 }
 

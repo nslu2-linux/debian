@@ -96,7 +96,7 @@ typedef struct {
  * It must be called before any of the demos as it initialises the necessary
  * components.
  *
- * @param npeID             Id for the Npe to setup for Dma function
+ * @param npeId             Id for the Npe to setup for Dma function
  *                   @li    IX_NPEDL_NPEID_NPEA for Npe A
  *                   @li    IX_NPEDL_NPEID_NPEB for Npe B
  *                   @li    IX_NPEDL_NPEID_NPEC for Npe C

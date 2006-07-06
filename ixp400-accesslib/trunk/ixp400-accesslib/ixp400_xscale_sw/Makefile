@@ -54,7 +54,7 @@
 # Components that work only for a subset of platforms
 # should be added to the relevant *_COMPONENTS lists.
 #
-BI_ENDIAN_COMPONENTS := atmdAcc atmm atmsch qmgr npeMh npeDl ethAcc ethDB ethMii hssAcc usb uartAcc featureCtrl ossl osServices 
+BI_ENDIAN_COMPONENTS := atmdAcc atmm atmsch qmgr npeMh npeDl ethAcc ethDB ethMii hssAcc uartAcc usb featureCtrl ossl osServices 
 
 
 #Components only applicable to ixp46x
@@ -64,8 +64,11 @@ ixp46X_BI_ENDIAN_COMPONENTS := timeSyncAcc parityENAcc i2c sspAcc
 vxbe_COMPONENTS := $(BI_ENDIAN_COMPONENTS) perfProfAcc dmaAcc
 vxle_COMPONENTS := $(BI_ENDIAN_COMPONENTS) perfProfAcc
 vxsim_COMPONENTS := $(BI_ENDIAN_COMPONENTS) dmaAcc
-linuxbe_COMPONENTS := $(BI_ENDIAN_COMPONENTS) perfProfAcc dmaAcc oslinux
-linuxle_COMPONENTS := $(BI_ENDIAN_COMPONENTS) perfProfAcc oslinux
+ifeq ($(IX_LINUXVER),2.6)
+linuxbe_COMPONENTS := $(BI_ENDIAN_COMPONENTS) dmaAcc oslinux
+else
+linuxbe_COMPONENTS := $(BI_ENDIAN_COMPONENTS) dmaAcc oslinux perfProfAcc
+endif
 
 #The lists below contain the set of components available for each target platform
 # specific to the ixp46X device
@@ -92,16 +95,21 @@ endif
 # Codelet components
 # Codeletes listed in BI_ENDIAN_CODELETS_COMPONENTS must work for both
 # big and little endian OSs.
-BI_ENDIAN_CODELETS_COMPONENTS := hssAcc ethAcc perfProfAcc atm
+BI_ENDIAN_CODELETS_COMPONENTS := hssAcc ethAcc atm
 
 #Codelet components only applicable to ixp46x
 ixp46X_BI_ENDIAN_CODELETS_COMPONENTS := timeSyncAcc parityENAcc
 
-vxbe_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS) dmaAcc
-vxle_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS)
-vxsim_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS) dmaAcc
+vxbe_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS) dmaAcc perfProfAcc
+vxle_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS) perfProfAcc
+vxsim_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS) dmaAcc perfProfAcc
+ifeq ($(IX_LINUXVER),2.6)
 linuxbe_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS) dmaAcc
 linuxle_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS)
+else
+linuxbe_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS) dmaAcc perfProfAcc
+linuxle_CODELETS_COMPONENTS := $(BI_ENDIAN_CODELETS_COMPONENTS) perfProfAcc
+endif
 
 #The lists below contain the set of components available for each target platform
 # specific to the ixp46X device
@@ -172,8 +180,13 @@ IX_TGT_DEVICE := ixp425
 endif
 
 OSAL_DIR := $(IX_XSCALE_SW)/../ixp_osal
-OSAL_IMAGE := $(OSAL_DIR)/lib/$(IX_TGT_DEVICE)/$(IX_TARGET_OS)/$(IX_TARGET)/libosal.a
-OSAL_MODULE := $(OSAL_DIR)/lib/$(IX_TGT_DEVICE)/$(IX_TARGET_OS)/$(IX_TARGET)/ixp_osal.o
+ifeq ($(IX_TARGET_OS),linux)
+OSAL_IMAGE := ../ixp_osal/lib/$(IX_TGT_DEVICE)/$(IX_TARGET_OS)/$(IX_TARGET)-$(IX_LINUXVER)/libosal.a
+OSAL_MODULE := ../ixp_osal/lib/$(IX_TGT_DEVICE)/$(IX_TARGET_OS)/$(IX_TARGET)-$(IX_LINUXVER)/ixp_osal.o
+else
+OSAL_IMAGE := ../ixp_osal/lib/$(IX_TGT_DEVICE)/$(IX_TARGET_OS)/$(IX_TARGET)/libosal.a
+OSAL_MODULE := ../ixp_osal/lib/$(IX_TGT_DEVICE)/$(IX_TARGET_OS)/$(IX_TARGET)/ixp_osal.o
+endif 
 
 .PHONY: osal_build
 osal_build :
@@ -297,12 +310,24 @@ endif
 else # IX_TARGET_OS == vxworks
 # linux compiler flags 
 MAKE_DEP_FLAG := -M
+ifeq ($(IX_LINUXVER),2.6) #kernel 2.6 arch flag
+LINUX_MACH_CFLAGS := -D__LINUX_ARM_ARCH__=5 -march=armv5te -Wa,-mcpu=xscale \
+		     -mtune=xscale 
+else
 LINUX_MACH_CFLAGS := -D__LINUX_ARM_ARCH__=5 -mcpu=xscale -mtune=xscale
-
-CFLAGS := -D__KERNEL__ -I$(LINUX_SRC)/include -Wall -Wno-trigraphs -fno-common -pipe -mapcs-32 -mshort-load-bytes -msoft-float -DMODULE -Isrc/include -D__linux -DCPU=33 -DXSCALE=33 $(LINUX_MACH_CFLAGS)
-ifndef IX_INCLUDE_MICROCODE
-CFLAGS += -DIX_NPEDL_READ_MICROCODE_FROM_FILE
 endif
+
+ifeq ($(IX_LINUXVER),2.6) #kernel 2.6 CFLAGS
+CFLAGS := -D__KERNEL__ -I$(LINUX_SRC)/include -Wall -Wno-trigraphs -fno-common -pipe -msoft-float -DMODULE\
+ -Isrc/include -D__linux -DCPU=33 -DXSCALE=33 $(LINUX_MACH_CFLAGS) -mabi=apcs-gnu
+else
+CFLAGS := -D__KERNEL__ -I$(LINUX_SRC)/include -Wall -Wno-trigraphs -fno-common -pipe -mshort-load-bytes -msoft-float\
+ -DMODULE -Isrc/include -D__linux -DCPU=33 -DXSCALE=33 $(LINUX_MACH_CFLAGS) -mapcs-32
+endif
+
+# Read microcode from file only
+CFLAGS += -DIX_NPEDL_READ_MICROCODE_FROM_FILE
+
 
 # Linux linker flags
 LDFLAGS := -r
@@ -692,6 +717,14 @@ usage:
 # OUTPUT_DIR_FLAGS, no other rules need to depend on them, as the
 # dependencies are always built first.
 
+ifeq ($(IX_DEVICE),ixp46X)
+OBJ_DIR := $(IX_DEVICE)/lib/$(IX_TARGET)
+OBJ_DIR_EXIT := ../../..
+else
+OBJ_DIR := lib/$(IX_TARGET)
+OBJ_DIR_EXIT := ../..
+endif
+
 OUTPUT_DIR_FLAGS := $(OUTPUT_DIRS:%=%/.dirCreationFlag)
 
 $(OUTPUT_DIR_FLAGS):
@@ -866,9 +899,7 @@ $(NPE_DAT) : $(NPE_CONVERTER)
 # Generation of IxNpeMicrocode.dat
 
 ifeq ($(IX_HOST_OS),linux)
-ifndef IX_INCLUDE_MICROCODE
 Makefile: $(NPE_CONVERTER) $(NPE_DAT)
-endif
 endif
 
 ################################################################
@@ -1015,10 +1046,32 @@ $(OBJ_DIR)/%.out : force
 # happening here.
 
 # The 'module' rule is a shortcut for the full filename
+ifeq ($(IX_LINUXVER),2.6)
+module: $(OBJ_DIR)/ixp400_$(COMP).ko
+else
 module: $(OBJ_DIR)/ixp400_$(COMP).o
+endif
+
 
 # The list of object files for a ixp400_%.o rule
 MOD_OBJ = $($*_OBJ:%=$(PATTERN_OBJ_DIR)/%)
+
+# Rule to build the 2.6 module.  Correct dependency info for this rule is \
+  provided by %-component-dependencies.d.
+$(ALL_COMPONENTS:%=$(OBJ_DIR)/ixp400_%.ko): $(OBJ_DIR)/ixp400_%.ko : $(OBJ_DIR)/ixp400_%.o
+	$(MAKEFILE_TRACE) Building kernel 2.6 component object module for component $*
+	@echo 'EXTRA_LDFLAGS := --whole-archive' > $(OBJ_DIR)/Makefile
+	@echo ' ' >> $(OBJ_DIR)/Makefile
+	@echo 'lib-m := $($*_OBJ:%=$(PATTERN_COMP_DIR)/%)' >> $(OBJ_DIR)/Makefile
+	@echo ' ' >> $(OBJ_DIR)/Makefile
+	@echo 'obj-m := ixp400_$*.o' >> $(OBJ_DIR)/Makefile
+	@echo ' ' >> $(OBJ_DIR)/Makefile
+	@echo 'ixp400_$*-objs := lib.a' >> $(OBJ_DIR)/Makefile
+	@echo ' ' >> $(OBJ_DIR)/Makefile
+	@echo 'default:' >> $(OBJ_DIR)/Makefile
+	@echo -ne "\t" >> $(OBJ_DIR)/Makefile
+	@echo 'make -C $(LINUX_SRC) M=$(shell pwd)/$(OBJ_DIR) V=1 modules' >> $(OBJ_DIR)/Makefile
+	make -C $(OBJ_DIR)
 
 # Rule to build the module.  Correct dependency info for this rule is provided by %-component-dependencies.d.
 $(ALL_COMPONENTS:%=$(OBJ_DIR)/ixp400_%.o) : $(OBJ_DIR)/ixp400_%.o :
@@ -1031,12 +1084,25 @@ $(OBJ_DIR)/ixp400_%.o : force
 	@echo $(ECHO_QUOTE)Valid targets are: $(ALL_LOADABLES)$(ECHO_QUOTE)
 	@false
 
+$(OBJ_DIR)/ixp400_%.ko : force
+	@echo $(ECHO_QUOTE)ERROR: Can't build $@ because \"$*\" is not a valid component name$(ECHO_QUOTE) # ' this comment is here to fix emacs syntax highlighting
+	@echo $(ECHO_QUOTE)Valid targets are: $(ALL_LOADABLES)$(ECHO_QUOTE)
+	@false
+
 # The 'modules' target builds every module
-ALL_MODULES := $(ALL_COMPONENTS:%=$(OBJ_DIR)/ixp400_%.o)
 ifneq (,$(COMPONENTS))
-ALL_MODULES += $(OBJ_DIR)/ixp400.o
+ALL_MODULES := ixp400 
 endif
+
+TEMP_CODELETS_COMPONENTS := $(CODELETS_COMPONENTS:%=codelets_%)
+ifeq ($(IX_LINUXVER),2.6)
+ALL_MODULES += $(TEMP_CODELETS_COMPONENTS:%=$(OBJ_DIR)/ixp400_%.ko)
+else
+ALL_MODULES += $(TEMP_CODELETS_COMPONENTS:%=$(OBJ_DIR)/ixp400_%.o)
+endif
+
 modules: $(ALL_MODULES)
+
 
 
 ################################################################
@@ -1260,7 +1326,7 @@ all_vxsim:
 
 else # IX_TARGET_OS
 
-ALL_SUB_RULES += all_linuxbe all_linuxle
+ALL_SUB_RULES += all_linuxbe
 
 all_linuxle :
 	$(MAKE) IX_TARGET=linuxle IX_PLATFORM=$(IX_PLATFORM) IX_DEVICE=$(IX_DEVICE) modules
@@ -1317,13 +1383,26 @@ endif
 ################################################################
 # Loadable module containing all component code
 
-ixp400.o : $(OBJ_DIR)/ixp400.o
-
-ifndef IX_INCLUDE_MICROCODE
-$(OBJ_DIR)/ixp400.o: $(COMPONENTS:%=$(OBJ_DIR)/ixp400_%.o) $(OSAL_MODULE)
-	$(LD) $(LDFLAGS) $^ -o $@
+ifeq ($(IX_LINUXVER),2.6)
+ixp400 : $(OBJ_DIR)/ixp400.o
+	@echo 'EXTRA_LDFLAGS := --whole-archive' > $(OBJ_DIR)/Makefile
+	@echo ' ' >> $(OBJ_DIR)/Makefile
+	@echo 'lib-m := $(COMPONENTS:%=ixp400_%.o) $(OBJ_DIR_EXIT)/$(OSAL_MODULE)'>> $(OBJ_DIR)/Makefile
+	@echo ' ' >> $(OBJ_DIR)/Makefile
+	@echo 'obj-m := ixp400.o' >> $(OBJ_DIR)/Makefile
+	@echo ' ' >> $(OBJ_DIR)/Makefile
+	@echo 'ixp400-objs := lib.a' >> $(OBJ_DIR)/Makefile
+	@echo ' ' >> $(OBJ_DIR)/Makefile
+	@echo 'default:' >> $(OBJ_DIR)/Makefile
+	@echo -ne "\t" >> $(OBJ_DIR)/Makefile
+	@echo 'make -C $(LINUX_SRC) M=$(shell pwd)/$(OBJ_DIR) V=1 modules' >> $(OBJ_DIR)/Makefile
+	make -C $(OBJ_DIR)
 else
-$(OBJ_DIR)/ixp400.o: $(COMPONENTS:%=$(OBJ_DIR)/ixp400_%.o) $(NPE_PRODUCTION_HEADER_OBJ) $(OSAL_MODULE)
+ixp400 : $(OBJ_DIR)/ixp400.o
+endif
+
+$(OBJ_DIR)/ixp400.o: $(COMPONENTS:%=$(OBJ_DIR)/ixp400_%.o) $(OSAL_MODULE)
+ifneq ($(IX_LINUXVER),2.6)
 	$(LD) $(LDFLAGS) $^ -o $@
 endif
 

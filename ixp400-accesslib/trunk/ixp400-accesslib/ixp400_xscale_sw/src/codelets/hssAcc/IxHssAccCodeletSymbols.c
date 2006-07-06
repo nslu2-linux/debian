@@ -113,7 +113,7 @@ static int __init hss_init_module(void)
 	printk("\n           %d = HSS Port 0 and 1.", IX_HSSACC_CODELET_DUAL_PORTS);
 	printk("\n Where c : %d = Received traffics are verified.", IX_HSSACC_CODELET_VERIFY_ON);
 	printk("\n           %d = Received traffics are not verified. \n", IX_HSSACC_CODELET_VERIFY_OFF);
-        return 1;
+        return -EINVAL;
     }
 
     kernel_thread(operation_func, NULL, CLONE_SIGHAND);

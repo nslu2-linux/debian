@@ -273,7 +273,7 @@ typedef enum
 typedef struct  
 {
    UINT8 macAddress[IX_IEEE803_MAC_ADDRESS_SIZE];
-} IxEthDBMacAddr;
+} IX_OSAL_ATTRIBUTE_PACKED IxEthDBMacAddr;
 
 /**
  *

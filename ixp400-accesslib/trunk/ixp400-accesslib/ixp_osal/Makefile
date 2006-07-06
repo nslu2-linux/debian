@@ -49,15 +49,17 @@
 ## IX_TARGET needs to be set as one of linuxbe/linuxle, vxle/vxbe.
 ## wince has its own build system.
 
+## Reuse IX_TARGET for TARGET_ENDIAN. 
+IX_OSAL_MK_TARGET_ENDIAN := $(IX_TARGET)
+
 # NOTE - this is case-sensitive
 ifneq (,$(filter $(IX_TARGET), linuxbe linuxle))
 IX_OSAL_MK_TARGET_OS := linux
+IX_OSAL_MK_LINUXVER := -$(IX_LINUXVER)
 else
 IX_OSAL_MK_TARGET_OS := vxworks
 endif
 
-## Reuse IX_TARGET for TARGET_ENDIAN. 
-IX_OSAL_MK_TARGET_ENDIAN := $(IX_TARGET)
 
 ################################################################
 # Determine the target platform
@@ -106,7 +108,7 @@ OS_SRC_PREFIX := os/$(IX_OSAL_MK_TARGET_OS)/$(MAIN_SRC_PREFIX)
 MAIN_INC_PREFIX := include
 OS_INC_PREFIX := os/$(IX_OSAL_MK_TARGET_OS)/$(MAIN_INC_PREFIX)
 
-OBJ_BASE_DIR := lib/$(IX_OSAL_MK_TGT_DEVICE)/$(IX_OSAL_MK_TARGET_OS)/$(IX_OSAL_MK_TARGET_ENDIAN)
+OBJ_BASE_DIR := lib/$(IX_OSAL_MK_TGT_DEVICE)/$(IX_OSAL_MK_TARGET_OS)/$(IX_OSAL_MK_TARGET_ENDIAN)$(IX_OSAL_MK_LINUXVER)
 
 SRC_DIRS := $(OSAL_DIRS:%=$(MAIN_SRC_PREFIX)/%) $(OSAL_DIRS:%=$(OS_SRC_PREFIX)/%)
 
@@ -121,7 +123,7 @@ SRC_DIRS := $(OSAL_DIRS:%=$(MAIN_SRC_PREFIX)/%) $(OSAL_DIRS:%=$(OS_SRC_PREFIX)/%
 OUTPUT_DIRS := lib \
                lib/$(IX_OSAL_MK_TGT_DEVICE) \
                lib/$(IX_OSAL_MK_TGT_DEVICE)/$(IX_OSAL_MK_TARGET_OS) \
-               lib/$(IX_OSAL_MK_TGT_DEVICE)/$(IX_OSAL_MK_TARGET_OS)/$(IX_OSAL_MK_TARGET_ENDIAN) \
+               lib/$(IX_OSAL_MK_TGT_DEVICE)/$(IX_OSAL_MK_TARGET_OS)/$(IX_OSAL_MK_TARGET_ENDIAN)$(IX_OSAL_MK_LINUXVER) \
                $(OBJ_BASE_DIR) \
                $(OBJ_BASE_DIR)/$(MAIN_SRC_PREFIX) \
                $(OBJ_BASE_DIR)/$(MAIN_SRC_PREFIX)/core \
@@ -453,6 +455,7 @@ include $(DEPS)
 
 
 
+
 # Rule to build OSAL library
 libosal : $(OBJ_BASE_DIR)/libosal.a
 	$(ECHO_BLANKLINE)
@@ -462,8 +465,6 @@ libosal : $(OBJ_BASE_DIR)/libosal.a
 $(OBJ_BASE_DIR)/libosal.a : $(ALL_OBJ)
 	$(MAKEFILE_TRACE) Building OSAL library containing components $(COMPONENTS:%=\"%\")
 	$(AR) rvs $(OBJ_BASE_DIR)/libosal.a $^
-
-
  
 # Simple rule to build everything
 .PHONY: all

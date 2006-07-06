@@ -39,8 +39,8 @@
 # @par
 # -- End of Copyright Notice --
 # Change the following line to point to your linux kernel source tree
-setenv linuxbe_KERNEL_DIR /path/to/the/be/os/linux-2.4
-setenv linuxle_KERNEL_DIR /path/to/the/le/os/linux-2.4
+setenv linuxbe_KERNEL_DIR /path/to/the/be/os/linux-2.6
+setenv linuxle_KERNEL_DIR /path/to/the/le/os/linux-2.6
 
 # Change the following line to point to the root of your Monta Vista install
 setenv HARDHAT_BASE /opt/montavista/pro
@@ -65,3 +65,4 @@ setenv IX_PLATFORM ixdp42x
 # For Little endian, set IX_TARGET to linuxle
 setenv IX_TARGET linuxbe
 
+setenv IX_LINUXVER 2.6

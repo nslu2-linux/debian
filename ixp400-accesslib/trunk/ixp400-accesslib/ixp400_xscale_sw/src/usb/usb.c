@@ -573,7 +573,7 @@ ixUSBEndpointStall(USBDevice *device,
     {
         if (stallFlag)
         {
-            if (((UDCCS & UDC_UDCCS0_FST) != 0) == stallFlag)
+            if ((BOOL)((UDCCS & UDC_UDCCS0_FST) != 0) == stallFlag)
             {
                 RETURN_REDUNDANT(device);
             }
@@ -587,7 +587,7 @@ ixUSBEndpointStall(USBDevice *device,
     }
     else if (EP_DIRECTION(EPDescriptorTable[endpointNumber]) == USB_IN) /* USB_IN endpoints */
     {
-        if (((UDCCS & UDC_UDCCS_FST_IN) != 0) == stallFlag)
+        if ((BOOL)((UDCCS & UDC_UDCCS_FST_IN) != 0) == stallFlag)
         {
             RETURN_REDUNDANT(device);
         }
@@ -605,7 +605,7 @@ ixUSBEndpointStall(USBDevice *device,
     {
         IX_USB_ASSERT(EP_DIRECTION(EPDescriptorTable[endpointNumber]) == USB_OUT);
 
-        if (((UDCCS & UDC_UDCCS_FST_OUT) != 0) == stallFlag)
+        if ((BOOL)((UDCCS & UDC_UDCCS_FST_OUT) != 0) == stallFlag)
         {
             RETURN_REDUNDANT(device);
         }

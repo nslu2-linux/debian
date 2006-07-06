@@ -48,21 +48,50 @@
 #ifndef IxOsalOsTypes_H
 #define IxOsalOsTypes_H
 
+#include <linux/version.h>
+
 #include <linux/types.h>
 #include <asm/semaphore.h>
+#include <linux/config.h>
 
-typedef long long INT64;	      /**< 64-bit signed integer */
-typedef unsigned long long UINT64;    /**< 64-bit unsigned integer */
-typedef int INT32;		      /**< 32-bit signed integer */
-typedef unsigned int UINT32;	      /**< 32-bit unsigned integer */
-typedef short INT16;		      /**< 16-bit signed integer */
-typedef unsigned short UINT16;	      /**< 16-bit unsigned integer */
-typedef char INT8;		      /**< 8-bit signed integer */
-typedef unsigned char UINT8;	      /**< 8-bit unsigned integer */
-typedef UINT32 ULONG;		      /**< alias for UINT32 */
-typedef UINT16 USHORT;		      /**< alias for UINT16 */
-typedef UINT8 UCHAR;		      /**< alias for UINT8 */
-typedef UINT32 BOOL;		      /**< alias for UINT32 */
+#if KERNEL_VERSION(2,6,0) <= LINUX_VERSION_CODE
+#include <linux/sched.h>
+#include <linux/kthread.h>
+#endif /* KERNEL_VERSION */
+
+typedef s64	INT64;	/**< 64-bit signed integer */
+typedef u64	UINT64;	/**< 64-bit unsigned integer */
+typedef s32	INT32;	/**< 32-bit signed integer */
+typedef u32	UINT32;	/**< 32-bit unsigned integer */
+typedef s16	INT16;	/**< 16-bit signed integer */
+typedef u16	UINT16;	/**< 16-bit unsigned integer */
+typedef s8	INT8;	/**< 8-bit signed integer */
+typedef u8	UINT8;	/**< 8-bit unsigned integer */
+typedef UINT32	ULONG;	/**< alias for UINT32 */
+typedef UINT16	USHORT;	/**< alias for UINT16 */
+typedef UINT8	UCHAR;	/**< alias for UINT8 */
+typedef UINT32	BOOL;	/**< alias for UINT32 */
+
+/* 
+ * Detecting the kernel version that we compiled against. We do not lock down
+ * specifically to any revision here.
+ */
+#if (KERNEL_VERSION(2,6,0) <= LINUX_VERSION_CODE) && \
+    (KERNEL_VERSION(2,7,0) > LINUX_VERSION_CODE)
+#define IX_OSAL_OS_LINUX_VERSION_2_6	1	/* Kernel 2.6 */
+#undef IX_OSAL_OS_LINUX_VERSION_2_4    
+#elif (KERNEL_VERSION(2,4,0) <= LINUX_VERSION_CODE) && \
+      (KERNEL_VERSION(2,5,0) > LINUX_VERSION_CODE)
+#define IX_OSAL_OS_LINUX_VERSION_2_4	1	/* Kernel 2.4 */
+#undef IX_OSAL_OS_LINUX_VERSION_2_6
+#else
+#error "Non supported Linux kernel version"
+#endif /* KERNEL_VERSION */
+
+#if defined (CONFIG_CPU_IXP46X) || defined (CONFIG_ARCH_IXP465)
+#undef __ixp46X
+#define __ixp46X
+#endif /* CONFIG_CPU_IXP46X */
 
 /* Default stack limit is 10 KB */
 #define IX_OSAL_OS_THREAD_DEFAULT_STACK_SIZE  (10240) 
@@ -80,9 +109,15 @@ typedef UINT32 BOOL;		      /**< alias for UINT32 */
 
 #define IX_OSAL_OS_WAIT_NONE	0
 
+#define IX_OSAL_OS_ATTRIBUTE_PACKED __attribute__((__packed__))
 
-/* Thread handle is eventually an int type */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+/* Thread handle is a task_struct pointer */
+typedef struct task_struct *IxOsalOsThread;
+#else
+/* Thread handle is an int type */
 typedef int IxOsalOsThread;
+#endif
 
 /* Semaphore handle */   
 typedef struct semaphore *IxOsalOsSemaphore;

@@ -54,15 +54,20 @@
 #endif
 
 /* Memory Base Address */
-#define IX_OSAL_IXP400_ETH_MAC_A0_PHYS_BASE    (0x0C800C000)           /* MAC on NPE-A */
+#define IX_OSAL_IXP400_ETH_MAC_A0_PHYS_BASE    IXP4XX_EthA_BASE_PHYS           /* MAC on NPE-A */
 #define IX_OSAL_IXP400_TIMESYNC_PHYS_BASE      IXP4XX_TIMESYNC_BASE_PHYS
 #define IX_OSAL_IXP400_PARITYEN_PHYS_BASE      (0xCC00E51C)
 #define IX_OSAL_IXP400_I2C_PHYS_BASE           IXP4XX_I2C_BASE_PHYS
 #define IX_OSAL_IXP400_SSP_PHYS_BASE           IXP4XX_SSP_BASE_PHYS
 #define IX_OSAL_IXP400_PKE_CRYPTO_ENGINE_EAU_PHYS_BASE			(0x70000000) 
 #define IX_OSAL_IXP400_PKE_CRYPTO_ENGINE_RNG_SHA_PHYS_BASE		(0x70002100)
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+#define IX_OSAL_IXP400_EXP_BUS_PHYS_BASE       	IXP4XX_EXP_BUS_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_BOOT_PHYS_BASE	0x00000000	/* This definition being removed from Linux 2.6 */
+#else
 #define IX_OSAL_IXP400_EXP_BUS_PHYS_BASE       	IXP425_EXP_BUS_BASE2_PHYS
 #define IX_OSAL_IXP400_EXP_BUS_BOOT_PHYS_BASE  	IXP425_EXP_BUS_BASE1_PHYS
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 #define IX_OSAL_IXP400_EXP_BUS_CS0_PHYS_BASE   	IXP4XX_EXP_BUS_CS0_BASE_PHYS
 #define IX_OSAL_IXP400_EXP_BUS_CS1_PHYS_BASE   	IXP4XX_EXP_BUS_CS1_BASE_PHYS
 #define IX_OSAL_IXP400_EXP_BUS_CS2_PHYS_BASE   	IXP4XX_EXP_BUS_CS2_BASE_PHYS
@@ -73,7 +78,7 @@
 #define IX_OSAL_IXP400_EXP_BUS_CS7_PHYS_BASE   	IXP4XX_EXP_BUS_CS7_BASE_PHYS
 
 /* Memory Mapping */
-#define IX_OSAL_IXP400_PERIPHERAL_MAP_SIZE    IXP4XX_PERIPHERAL_REGION_SIZE  /**< Peripheral space map size */
+#define IX_OSAL_IXP400_PERIPHERAL_MAP_SIZE  IXP4XX_PERIPHERAL_REGION_SIZE    /**< Peripheral space map size */
 #define IX_OSAL_IXP400_ETH_MAC_A0_MAP_SIZE    (0x1000)	    /**< Eth B map size */
 #define IX_OSAL_IXP400_I2C_MAP_SIZE         	(0x10)          /**< I2C map size */
 #define IX_OSAL_IXP400_SSP_MAP_SIZE         	(0x14)          /**< SSP map size */
@@ -81,7 +86,11 @@
 #define IX_OSAL_IXP400_PARITYEN_MAP_SIZE    	(0x100000)      /**< Parity map size */
 #define IX_OSAL_IXP400_PKE_CRYPTO_ENGINE_RNG_SHA_MAP_SIZE	(0x200)  /**< Crypto RNG and SHA map size */
 #define IX_OSAL_IXP400_PKE_CRYPTO_ENGINE_EAU_MAP_SIZE		(0x2100)  /**< Crypto EAU map size */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+#define IX_OSAL_IXP400_EXP_BUS_MAP_SIZE		(IXP4XX_EXP_BUS_CSX_REGION_SIZE*8)
+#else
 #define IX_OSAL_IXP400_EXP_BUS_MAP_SIZE     	(IXP4XX_EXP_BUS_REGION_SIZE) /**< Total Expansion bus map size */
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 #define IX_OSAL_IXP400_EXP_BUS_CS0_MAP_SIZE 	(IXP4XX_EXP_BUS_CSX_REGION_SIZE) /**< CS0 map size */
 #define IX_OSAL_IXP400_EXP_BUS_CS1_MAP_SIZE 	(IXP4XX_EXP_BUS_CSX_REGION_SIZE) /**< CS1 map size */
 #define IX_OSAL_IXP400_EXP_BUS_CS2_MAP_SIZE 	(IXP4XX_EXP_BUS_CSX_REGION_SIZE) /**< CS2 map size */
@@ -92,38 +101,38 @@
 #define IX_OSAL_IXP400_EXP_BUS_CS7_MAP_SIZE 	(IXP4XX_EXP_BUS_CSX_REGION_SIZE) /**< CS7 map size */
 
 /* Interrupt IRQ Level */
-#define IX_OSAL_IXP400_USB_HOST_IRQ_LVL  (32)
-#define IX_OSAL_IXP400_I2C_IRQ_LVL       (33)
-#define IX_OSAL_IXP400_SSP_IRQ_LVL       (34)
-#define IX_OSAL_IXP400_TSYNC_IRQ_LVL     (35)	
-#define IX_OSAL_IXP400_EAU_DONE_IRQ_LVL  (36)	
-#define IX_OSAL_IXP400_SHA_HASHING_DONE_IRQ_LVL	(37)	
-#define IX_OSAL_IXP400_RSVD_38_IRQ_LVL    (38)
-#define IX_OSAL_IXP400_RSVD_39_IRQ_LVL    (39)
-#define IX_OSAL_IXP400_RSVD_40_IRQ_LVL    (40)
-#define IX_OSAL_IXP400_RSVD_41_IRQ_LVL    (41)
-#define IX_OSAL_IXP400_RSVD_42_IRQ_LVL    (42)
-#define IX_OSAL_IXP400_RSVD_43_IRQ_LVL    (43)
-#define IX_OSAL_IXP400_RSVD_44_IRQ_LVL    (44)
-#define IX_OSAL_IXP400_RSVD_45_IRQ_LVL    (45)
-#define IX_OSAL_IXP400_RSVD_46_IRQ_LVL    (46)
-#define IX_OSAL_IXP400_RSVD_47_IRQ_LVL    (47)
-#define IX_OSAL_IXP400_RSVD_48_IRQ_LVL    (48)
-#define IX_OSAL_IXP400_RSVD_49_IRQ_LVL    (49)
-#define IX_OSAL_IXP400_RSVD_50_IRQ_LVL    (50)
-#define IX_OSAL_IXP400_RSVD_51_IRQ_LVL    (51)
-#define IX_OSAL_IXP400_RSVD_52_IRQ_LVL    (52)
-#define IX_OSAL_IXP400_RSVD_53_IRQ_LVL    (53)
-#define IX_OSAL_IXP400_RSVD_54_IRQ_LVL    (54)
-#define IX_OSAL_IXP400_RSVD_55_IRQ_LVL    (55)
-#define IX_OSAL_IXP400_RSVD_56_IRQ_LVL    (56)
-#define IX_OSAL_IXP400_RSVD_57_IRQ_LVL    (57)
-#define IX_OSAL_IXP400_SWCP_IRQ_LVL       (58)	
-#define IX_OSAL_IXP400_RSVD_59_IRQ_LVL    (59)	
-#define IX_OSAL_IXP400_AQM_IRQ_LVL        (60)
-#define IX_OSAL_IXP400_MCU_IRQ_LVL        (61)	
-#define IX_OSAL_IXP400_EBC_IRQ_LVL        (62)	
-#define IX_OSAL_IXP400_RSVD_63_IRQ_LVL    (63)	
+#define IX_OSAL_IXP400_USB_HOST_IRQ_LVL			(32)
+#define IX_OSAL_IXP400_I2C_IRQ_LVL			(33)
+#define IX_OSAL_IXP400_SSP_IRQ_LVL 			(34)
+#define IX_OSAL_IXP400_TSYNC_IRQ_LVL			(35)
+#define IX_OSAL_IXP400_EAU_DONE_IRQ_LVL			(36)
+#define IX_OSAL_IXP400_SHA_HASHING_DONE_IRQ_LVL		(37)
+#define IX_OSAL_IXP400_RSVD_38_IRQ_LVL			(38)
+#define IX_OSAL_IXP400_RSVD_39_IRQ_LVL			(39)
+#define IX_OSAL_IXP400_RSVD_40_IRQ_LVL			(40)
+#define IX_OSAL_IXP400_RSVD_41_IRQ_LVL			(41)
+#define IX_OSAL_IXP400_RSVD_42_IRQ_LVL			(42)
+#define IX_OSAL_IXP400_RSVD_43_IRQ_LVL			(43)
+#define IX_OSAL_IXP400_RSVD_44_IRQ_LVL			(44)
+#define IX_OSAL_IXP400_RSVD_45_IRQ_LVL			(45)
+#define IX_OSAL_IXP400_RSVD_46_IRQ_LVL			(46)
+#define IX_OSAL_IXP400_RSVD_47_IRQ_LVL			(47)
+#define IX_OSAL_IXP400_RSVD_48_IRQ_LVL			(48)
+#define IX_OSAL_IXP400_RSVD_49_IRQ_LVL			(49)
+#define IX_OSAL_IXP400_RSVD_50_IRQ_LVL			(50)
+#define IX_OSAL_IXP400_RSVD_51_IRQ_LVL			(51)
+#define IX_OSAL_IXP400_RSVD_52_IRQ_LVL			(52)
+#define IX_OSAL_IXP400_RSVD_53_IRQ_LVL			(53)
+#define IX_OSAL_IXP400_RSVD_54_IRQ_LVL			(54)
+#define IX_OSAL_IXP400_RSVD_55_IRQ_LVL			(55)
+#define IX_OSAL_IXP400_RSVD_56_IRQ_LVL			(56)
+#define IX_OSAL_IXP400_RSVD_57_IRQ_LVL			(57)
+#define IX_OSAL_IXP400_SWCP_IRQ_LVL			(58)
+#define IX_OSAL_IXP400_RSVD_59_IRQ_LVL			(59)
+#define IX_OSAL_IXP400_AQM_IRQ_LVL	  		(60)
+#define IX_OSAL_IXP400_MCU_IRQ_LVL			(61)
+#define IX_OSAL_IXP400_EBC_IRQ_LVL			(62)
+#define IX_OSAL_IXP400_RSVD_63_IRQ_LVL			(63)	
 
 /* Time Stamp Resolution */
 #define IX_OSAL_IXP400_TIME_STAMP_RESOLUTION    (66666666) /* 66.66MHz */
@@ -149,92 +158,120 @@ IxOsalMemoryMap ixOsalGlobalMemoryMap[] = {
     /*
      * Queue Manager 
      */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
     {
-     IX_OSAL_STATIC_MAP,	/* type            */
-     IX_OSAL_IXP400_QMGR_PHYS_BASE,	/* physicalAddress */
-     IX_OSAL_IXP400_QMGR_MAP_SIZE,	/* size            */
-     IX_OSAL_IXP400_QMGR_VIRT_BASE,	/* virtualAddress  */
-     NULL,			/* mapFunction     */
-     NULL,			/* unmapFunction   */
-     0,				/* refCount        */
-     IX_OSAL_BE | IX_OSAL_LE_DC,	/* endianType      */   
-     "qMgr"			/* name            */
+     IX_OSAL_DYNAMIC_MAP,			/* type            */
+     IX_OSAL_IXP400_QMGR_PHYS_BASE,		/* physicalAddress */
+     IX_OSAL_IXP400_QMGR_MAP_SIZE,		/* size            */
+     0,						/* virtualAddress  */
+     ixOsalLinuxMemMap,				/* mapFunction     */
+     ixOsalLinuxMemUnmap,			/* unmapFunction   */
+     0,						/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_DC,		/* endianType      */   
+     "qMgr"					/* name            */
      },
+#else
+    {
+     IX_OSAL_STATIC_MAP,			/* type            */
+     IX_OSAL_IXP400_QMGR_PHYS_BASE,		/* physicalAddress */
+     IX_OSAL_IXP400_QMGR_MAP_SIZE,		/* size            */
+     IX_OSAL_IXP400_QMGR_VIRT_BASE,		/* virtualAddress  */
+     NULL,					/* mapFunction     */
+     NULL,					/* unmapFunction   */
+     0,						/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_DC,		/* endianType      */   
+     "qMgr"					/* name            */
+     },
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 
     /*
      * APB Peripherals 
      */
     {
-     IX_OSAL_STATIC_MAP,	/* type            */
+     IX_OSAL_STATIC_MAP,			/* type            */
      IX_OSAL_IXP400_PERIPHERAL_PHYS_BASE,	/* physicalAddress */
      IX_OSAL_IXP400_PERIPHERAL_MAP_SIZE,	/* size            */
      IX_OSAL_IXP400_PERIPHERAL_VIRT_BASE,	/* virtualAddress  */
-     NULL,			/* mapFunction     */
-     NULL,			/* unmapFunction   */
-     0,				/* refCount        */
-     IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
-     "peripherals"		/* name            */
+     NULL,					/* mapFunction     */
+     NULL,					/* unmapFunction   */
+     0,						/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_AC,		/* endianType      */
+     "peripherals"				/* name            */
      },
 
     /*
      * Expansion Bus Config Registers 
      */
     {
-     IX_OSAL_STATIC_MAP,	/* type            */
-     IX_OSAL_IXP400_EXP_CFG_PHYS_BASE,	/* physicalAddress */
-     IX_OSAL_IXP400_EXP_REG_MAP_SIZE,	/* size            */
-     IX_OSAL_IXP400_EXP_CFG_VIRT_BASE,	/* virtualAddress  */
-     NULL,			/* mapFunction     */
-     NULL,			/* unmapFunction   */
-     0,				/* refCount        */
-     IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
-     "Exp Cfg"			/* name            */
+     IX_OSAL_STATIC_MAP,			/* type            */
+     IX_OSAL_IXP400_EXP_CFG_PHYS_BASE,		/* physicalAddress */
+     IX_OSAL_IXP400_EXP_REG_MAP_SIZE,		/* size            */
+     IX_OSAL_IXP400_EXP_CFG_VIRT_BASE,		/* virtualAddress  */
+     NULL,					/* mapFunction     */
+     NULL,					/* unmapFunction   */
+     0,						/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_AC,		/* endianType      */
+     "Exp Cfg"					/* name            */
      },
 
     /*
      * PCI config Registers 
      */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
     {
-     IX_OSAL_STATIC_MAP,	/* type            */
-     IX_OSAL_IXP400_PCI_CFG_PHYS_BASE,	/* physicalAddress */
-     IX_OSAL_IXP400_PCI_CFG_MAP_SIZE,	/* size            */
-     IX_OSAL_IXP400_PCI_CFG_VIRT_BASE,	/* virtualAddress  */
-     NULL,			/* mapFunction     */
-     NULL,			/* unmapFunction   */
-     0,				/* refCount        */
-     IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
-     "pciConfig"		/* name            */
+     IX_OSAL_DYNAMIC_MAP,			/* type            */
+     IX_OSAL_IXP400_PCI_CFG_PHYS_BASE,		/* physicalAddress */
+     IX_OSAL_IXP400_PCI_CFG_MAP_SIZE,		/* size            */
+     0,						/* virtualAddress  */
+     ixOsalLinuxMemMap,				/* mapFunction     */
+     ixOsalLinuxMemUnmap,			/* unmapFunction   */
+     0,						/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_AC,		/* endianType      */
+     "pciConfig"				/* name            */
      },
+#else
+    {
+     IX_OSAL_STATIC_MAP,			/* type            */
+     IX_OSAL_IXP400_PCI_CFG_PHYS_BASE,		/* physicalAddress */
+     IX_OSAL_IXP400_PCI_CFG_MAP_SIZE,		/* size            */
+     IX_OSAL_IXP400_PCI_CFG_VIRT_BASE,		/* virtualAddress  */
+     NULL,					/* mapFunction     */
+     NULL,					/* unmapFunction   */
+     0,						/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_AC,		/* endianType      */
+     "pciConfig"				/* name            */
+     },
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 
     /*
      * Expansion Bus 
      */
     {
-     IX_OSAL_DYNAMIC_MAP,	/* type            */
-     IX_OSAL_IXP400_EXP_BUS_PHYS_BASE,	/* physicalAddress */
-     IX_OSAL_IXP400_EXP_BUS_MAP_SIZE,	/* size            */
-     0,				/* virtualAddress  */
-     ixOsalLinuxMemMap,		/* mapFunction     */
-     ixOsalLinuxMemUnmap,	/* unmapFunction   */
-     0,				/* refCount        */
-     IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
-     "Exp Bus"			/* name            */
+     IX_OSAL_DYNAMIC_MAP,			/* type            */
+     IX_OSAL_IXP400_EXP_BUS_PHYS_BASE,		/* physicalAddress */
+     IX_OSAL_IXP400_EXP_BUS_MAP_SIZE,		/* size            */
+     0,						/* virtualAddress  */
+     ixOsalLinuxMemMap,				/* mapFunction     */
+     ixOsalLinuxMemUnmap,			/* unmapFunction   */
+     0,						/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_AC,		/* endianType      */
+     "Exp Bus"					/* name            */
      },
 
      /*
-      * Parity Error Notifier config Registers 
-      */
+     * Parity Error Notifier config Registers 
+     */
     {
-     IX_OSAL_DYNAMIC_MAP,	/* type            */
-     IX_OSAL_IXP400_PARITYEN_PHYS_BASE,	/* physicalAddress */
-     IX_OSAL_IXP400_PARITYEN_MAP_SIZE,	/* size            */
-     0,				/* virtualAddress  */
-     ixOsalLinuxMemMap,		/* mapFunction     */
-     ixOsalLinuxMemUnmap,	/* unmapFunction   */
-     0,				/* refCount        */
-     IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
-     "Parity Error - Notifier - MCU"	/* name            */
-     },
+     IX_OSAL_DYNAMIC_MAP,	            	/* type            */
+     IX_OSAL_IXP400_PARITYEN_PHYS_BASE,		/* physicalAddress */
+     IX_OSAL_IXP400_PARITYEN_MAP_SIZE,		/* size            */
+     0,						/* virtualAddress  */
+     ixOsalLinuxMemMap,				/* mapFunction     */
+     ixOsalLinuxMemUnmap,	            	/* unmapFunction   */
+     0,						/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_AC,	    	/* endianType      */
+     "Parity Error Notifier - MCU"	    	/* name            */
+    },
 
     /*
      * Crypto Registers and RAM

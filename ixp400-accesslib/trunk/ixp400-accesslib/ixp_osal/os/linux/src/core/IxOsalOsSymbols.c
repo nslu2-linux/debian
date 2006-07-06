@@ -72,6 +72,7 @@ EXPORT_SYMBOL (ixOsalThreadExit);
 EXPORT_SYMBOL (ixOsalThreadPrioritySet);
 EXPORT_SYMBOL (ixOsalThreadSuspend);
 EXPORT_SYMBOL (ixOsalThreadResume);
+EXPORT_SYMBOL (ixOsalThreadStopCheck);
 
 EXPORT_SYMBOL (ixOsalMessageQueueCreate);
 EXPORT_SYMBOL (ixOsalMessageQueueDelete);

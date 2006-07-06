@@ -163,6 +163,56 @@ typedef struct /* USBEventProcessor */
     USBReceiveCallback receiveCallback; /* Data receive function */
 } USBEventProcessor;
 
+/* 
+ * Workaround to resolve USB registers naming convention conflicts with the
+ * kernel.
+ */
+#undef UDCCR
+#undef UDCCS0
+#undef UDCCS1
+#undef UDCCS2
+#undef UDCCS3
+#undef UDCCS4
+#undef UDCCS5
+#undef UDCCS6
+#undef UDCCS7
+#undef UDCCS8
+#undef UDCCS9
+#undef UDCCS10
+#undef UDCCS11
+#undef UDCCS12
+#undef UDCCS13
+#undef UDCCS14
+#undef UDCCS15
+#undef UICR0
+#undef UICR1
+#undef USIR0
+#undef USIR1
+#undef UFNHR
+#undef UFNLR
+#undef UBCR2
+#undef UBCR4
+#undef UBCR7
+#undef UBCR9
+#undef UBCR12
+#undef UBCR14
+#undef UDDR0
+#undef UDDR1
+#undef UDDR2
+#undef UDDR3
+#undef UDDR4
+#undef UDDR5
+#undef UDDR6
+#undef UDDR7
+#undef UDDR8
+#undef UDDR9
+#undef UDDR10
+#undef UDDR11
+#undef UDDR12
+#undef UDDR13
+#undef UDDR14
+#undef UDDR15
+
 /*  UDC Registers */
 typedef struct  /* UDCRegisters */
 {

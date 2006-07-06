@@ -231,7 +231,7 @@ ixAtmmTxDoneLoop (void* arg, void** retArgObj)
     unsigned dummyPtr;
     IX_STATUS retval;
 
-    while (ixAtmmTxDoneInitDone) 
+    while (!ixOsalThreadStopCheck()) 
     {
 	/* 
 	 * Sleep for the timer duration 
@@ -261,7 +261,7 @@ ixAtmmRxLoPriorityLoop (void* arg,
     unsigned dummyPtr;
     IX_STATUS retval;
 
-    while (ixAtmmRxLoPriorityInitDone)
+    while (!ixOsalThreadStopCheck())
     {
 	/* 
 	 * Sleep for the timer duration 
@@ -911,6 +911,7 @@ ixAtmmTxDoneUninit (void)
 {
     IX_STATUS retval = IX_SUCCESS;
     IX_STATUS retStatus;
+
     if (ixAtmmTxDoneInitDone)
     {
         /* Kill the thread for TxDone */
@@ -923,9 +924,9 @@ ixAtmmTxDoneUninit (void)
 
         /* Reset the flag to FALSE on finishing uninitialisation */
         ixAtmmTxDoneInitDone = FALSE;	
-
    }
-    return retval;
+
+   return retval;
 }
 
 

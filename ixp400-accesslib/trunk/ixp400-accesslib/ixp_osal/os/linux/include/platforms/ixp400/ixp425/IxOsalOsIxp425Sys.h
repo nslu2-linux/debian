@@ -54,16 +54,44 @@
 #endif
 
 /* Memory Base Address */
+
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+#define IX_OSAL_IXP400_EXP_BUS_PHYS_BASE       	IXP4XX_EXP_BUS_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_BOOT_PHYS_BASE  	0x00000000 /* IXP4XX_EXP_BUS_BASE1_PHYS is removed from kernel 2.6 */
+#define IX_OSAL_IXP400_EXP_BUS_CS0_PHYS_BASE   	IXP4XX_EXP_BUS_CS0_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS1_PHYS_BASE   	IXP4XX_EXP_BUS_CS1_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS2_PHYS_BASE   	IXP4XX_EXP_BUS_CS2_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS3_PHYS_BASE   	IXP4XX_EXP_BUS_CS3_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS4_PHYS_BASE   	IXP4XX_EXP_BUS_CS4_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS5_PHYS_BASE   	IXP4XX_EXP_BUS_CS5_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS6_PHYS_BASE   	IXP4XX_EXP_BUS_CS6_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS7_PHYS_BASE   	IXP4XX_EXP_BUS_CS7_BASE_PHYS
+#else
 #define IX_OSAL_IXP400_EXP_BUS_PHYS_BASE       	IXP425_EXP_BUS_BASE2_PHYS
 #define IX_OSAL_IXP400_EXP_BUS_BOOT_PHYS_BASE  	IXP425_EXP_BUS_BASE1_PHYS
 #define IX_OSAL_IXP400_EXP_BUS_CS0_PHYS_BASE   	IXP425_EXP_BUS_CS0_BASE_PHYS
 #define IX_OSAL_IXP400_EXP_BUS_CS1_PHYS_BASE   	IXP425_EXP_BUS_CS1_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS2_PHYS_BASE   	IXP425_EXP_BUS_CS2_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS3_PHYS_BASE   	IXP425_EXP_BUS_CS3_BASE_PHYS
 #define IX_OSAL_IXP400_EXP_BUS_CS4_PHYS_BASE   	IXP425_EXP_BUS_CS4_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS5_PHYS_BASE   	IXP425_EXP_BUS_CS5_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS6_PHYS_BASE   	IXP425_EXP_BUS_CS6_BASE_PHYS
+#define IX_OSAL_IXP400_EXP_BUS_CS7_PHYS_BASE   	IXP425_EXP_BUS_CS7_BASE_PHYS
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 
 /* Memory Mapping size */
-#define IX_OSAL_IXP400_PERIPHERAL_MAP_SIZE  	IXP425_PERIPHERAL_REGION_SIZE    /**< Peripheral space map size */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+#define IX_OSAL_IXP400_PERIPHERAL_MAP_SIZE  (IXP4XX_PERIPHERAL_REGION_SIZE)	    /**< Peripheral space map size */
+#else
+#define IX_OSAL_IXP400_PERIPHERAL_MAP_SIZE  (IXP425_PERIPHERAL_REGION_SIZE)	    /**< Peripheral space map size */
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
+
 /* Expansion Bus */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+#define IX_OSAL_IXP400_EXP_BUS_MAP_SIZE		(IXP4XX_EXP_BUS_CSX_REGION_SIZE*8)
+#else
 #define IX_OSAL_IXP400_EXP_BUS_MAP_SIZE       (0x08000000)  /**< Total Expansion bus map size */
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 #define IX_OSAL_IXP400_EXP_BUS_CS0_MAP_SIZE 	(0x01000000) /**< CS0 map size */
 #define IX_OSAL_IXP400_EXP_BUS_CS1_MAP_SIZE 	(0x01000000) /**< CS1 map size */
 #define IX_OSAL_IXP400_EXP_BUS_CS2_MAP_SIZE 	(0x01000000) /**< CS2 map size */
@@ -97,76 +125,104 @@ IxOsalMemoryMap ixOsalGlobalMemoryMap[] = {
     /*
      * Queue Manager 
      */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
     {
-     IX_OSAL_STATIC_MAP,	/* type            */
+     IX_OSAL_DYNAMIC_MAP,		/* type            */
+     IX_OSAL_IXP400_QMGR_PHYS_BASE,	/* physicalAddress */
+     IX_OSAL_IXP400_QMGR_MAP_SIZE,	/* size            */
+     0,					/* virtualAddress  */
+     ixOsalLinuxMemMap,			/* mapFunction     */
+     ixOsalLinuxMemUnmap,		/* unmapFunction   */
+     0,					/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_DC,	/* endianType      */   
+     "qMgr"				/* name            */
+     },
+#else
+    {
+     IX_OSAL_STATIC_MAP,		/* type            */
      IX_OSAL_IXP400_QMGR_PHYS_BASE,	/* physicalAddress */
      IX_OSAL_IXP400_QMGR_MAP_SIZE,	/* size            */
      IX_OSAL_IXP400_QMGR_VIRT_BASE,	/* virtualAddress  */
-     NULL,			/* mapFunction     */
-     NULL,			/* unmapFunction   */
-     0,				/* refCount        */
+     NULL,				/* mapFunction     */
+     NULL,				/* unmapFunction   */
+     0,					/* refCount        */
      IX_OSAL_BE | IX_OSAL_LE_DC,	/* endianType      */   
-     "qMgr"			/* name            */
+     "qMgr"				/* name            */
      },
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 
     /*
      * APB Peripherals 
      */
     {
-     IX_OSAL_STATIC_MAP,	/* type            */
+     IX_OSAL_STATIC_MAP,			/* type            */
      IX_OSAL_IXP400_PERIPHERAL_PHYS_BASE,	/* physicalAddress */
      IX_OSAL_IXP400_PERIPHERAL_MAP_SIZE,	/* size            */
      IX_OSAL_IXP400_PERIPHERAL_VIRT_BASE,	/* virtualAddress  */
-     NULL,			/* mapFunction     */
-     NULL,			/* unmapFunction   */
-     0,				/* refCount        */
-     IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
-     "peripherals"		/* name            */
+     NULL,					/* mapFunction     */
+     NULL,					/* unmapFunction   */
+     0,						/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_AC,		/* endianType      */
+     "peripherals"				/* name            */
      },
 
     /*
      * Expansion Bus Config Registers 
      */
     {
-     IX_OSAL_STATIC_MAP,	/* type            */
+     IX_OSAL_STATIC_MAP,		/* type            */
      IX_OSAL_IXP400_EXP_CFG_PHYS_BASE,	/* physicalAddress */
      IX_OSAL_IXP400_EXP_REG_MAP_SIZE,	/* size            */
      IX_OSAL_IXP400_EXP_CFG_VIRT_BASE,	/* virtualAddress  */
-     NULL,			/* mapFunction     */
-     NULL,			/* unmapFunction   */
-     0,				/* refCount        */
+     NULL,				/* mapFunction     */
+     NULL,				/* unmapFunction   */
+     0,					/* refCount        */
      IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
-     "Exp Cfg"			/* name            */
+     "Exp Cfg"				/* name            */
      },
 
     /*
      * PCI config Registers 
      */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
     {
-     IX_OSAL_STATIC_MAP,	/* type            */
+     IX_OSAL_DYNAMIC_MAP,		/* type            */
+     IX_OSAL_IXP400_PCI_CFG_PHYS_BASE,	/* physicalAddress */
+     IX_OSAL_IXP400_PCI_CFG_MAP_SIZE,	/* size            */
+     0,					/* virtualAddress  */
+     ixOsalLinuxMemMap,			/* mapFunction     */
+     ixOsalLinuxMemUnmap,		/* unmapFunction   */
+     0,					/* refCount        */
+     IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
+     "pciConfig"			/* name            */
+     },
+#else
+    {
+     IX_OSAL_STATIC_MAP,		/* type            */
      IX_OSAL_IXP400_PCI_CFG_PHYS_BASE,	/* physicalAddress */
      IX_OSAL_IXP400_PCI_CFG_MAP_SIZE,	/* size            */
      IX_OSAL_IXP400_PCI_CFG_VIRT_BASE,	/* virtualAddress  */
-     NULL,			/* mapFunction     */
-     NULL,			/* unmapFunction   */
-     0,				/* refCount        */
+     NULL,				/* mapFunction     */
+     NULL,				/* unmapFunction   */
+     0,					/* refCount        */
      IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
-     "pciConfig"		/* name            */
+     "pciConfig"			/* name            */
      },
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 
     /*
      * Expansion Bus 
      */
     {
-     IX_OSAL_DYNAMIC_MAP,	/* type            */
+     IX_OSAL_DYNAMIC_MAP,		/* type            */
      IX_OSAL_IXP400_EXP_BUS_PHYS_BASE,	/* physicalAddress */
      IX_OSAL_IXP400_EXP_BUS_MAP_SIZE,	/* size            */
-     0,				/* virtualAddress  */
-     ixOsalLinuxMemMap,		/* mapFunction     */
-     ixOsalLinuxMemUnmap,	/* unmapFunction   */
-     0,				/* refCount        */
+     0,					/* virtualAddress  */
+     ixOsalLinuxMemMap,			/* mapFunction     */
+     ixOsalLinuxMemUnmap,		/* unmapFunction   */
+     0,					/* refCount        */
      IX_OSAL_BE | IX_OSAL_LE_AC,	/* endianType      */
-     "Exp Bus"			/* name            */
+     "Exp Bus"				/* name            */
      }
 };
 

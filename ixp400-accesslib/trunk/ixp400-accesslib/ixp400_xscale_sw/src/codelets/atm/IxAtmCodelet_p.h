@@ -461,10 +461,10 @@ ixAtmCodeletUbrChannelsRemove (void);
 
 
 /** 
- * @brief This function is used to send the specified number of Aal0 packets,
+ * @brief This function is used to send Aal0 packets,
  *         with the number of cells per packet specified. The packets are multiplexed
  *         across all provisioned Aal0 48/52 channels.
- *         This function will block until the transmission is complete.
+ *         This function will block until the MBUF pool is nearly depleted.
  *
  * It is responsible to transmit a number of Aal0 packets each containing 
  * cellsPerPacket cells.
@@ -494,8 +494,6 @@ ixAtmCodeletUbrChannelsRemove (void);
  * 
  * @param "UINT32 cellsPerPacket" The number of cells per packet to send.
  *
- * @param "UINT32 numPackets" The total number of packets to send.
- *
  *
  * @return
  * IX_SUCCESS Indicates tha the Atm Codelet has successfully sent
@@ -504,13 +502,12 @@ ixAtmCodeletUbrChannelsRemove (void);
  *          from sending the packets successfully.
  */
 PUBLIC IX_STATUS
-ixAtmCodeletAal0PacketsSend (UINT32 cellsPerPacket,
-				 UINT32 numPackets);
+ixAtmCodeletAal0PacketsSend (UINT32 cellsPerPacket);
 
 /** 
- * @brief This function is used to send the specified number of Aal5 CPCS SDUs
+ * @brief This function is used to send the Aal5 CPCS SDUs
  *         of specified SDU size multiplexed accross all Aal5 provisioned channels.
- *         This function will block until the transmission is complete.
+ *         This function will block until the MBUF pool is nearly depleted.
  *
  * It is responsible to transmit a number of Aal5 CPCS SDUs of length sduLength. 
  * This function will call ixAtmRxTxAal5CpcsSdusSend (in ixAtmCodeletRxTx.c).
@@ -518,8 +515,6 @@ ixAtmCodeletAal0PacketsSend (UINT32 cellsPerPacket,
  *
  * @param "UINT32 sduSize" The SDU size of the sdus to send in bytes. The Atm
  *         trailer + padding will be appended to this.
- *
- * @param "UINT32 numsdus" The total number of sdus to send.
  *
  *
  * @return
@@ -529,8 +524,7 @@ ixAtmCodeletAal0PacketsSend (UINT32 cellsPerPacket,
  *          from sending the sdus successfully.
  */
 PUBLIC IX_STATUS
-ixAtmCodeletAal5CpcsSdusSend (UINT32 sduSize,
-			      UINT32 numSdus);
+ixAtmCodeletAal5CpcsSdusSend (UINT32 sduSize);
 
 /**
  * @brief This function is called to modify the portRate on a
@@ -614,21 +608,19 @@ ixAtmRxTxRxFreeLowReplenish (IxAtmdAccUserId userId);
 
 /**
  * @brief Send Aal5 CPCS SDUs
+ *
+ * @param "UINT32 sduSize" The SDU size in bytes to be transmitted
  */
 IX_STATUS
-ixAtmRxTxAal5CpcsSdusSend (UINT32 sduSize,
-			   UINT32 numSdus);
+ixAtmRxTxAal5CpcsSdusSend (UINT32 sduSize);
 
 /**
- * @brief Send Aal0 packets, where a packet is a number of cells
+ * @brief Send Aal0 packets
  *
  * @param "UINT32 cellsPerPacket" The number of cells per packet to send.
- *
- * @param "UINT32 numPackets" The total number of packets to send.
  */
 IX_STATUS
-ixAtmRxTxAal0PacketsSend (UINT32 cellsPerPacket,
-			  UINT32 numPackets);
+ixAtmRxTxAal0PacketsSend (UINT32 cellsPerPacket);
 
 /**
  * @brief This function initializes Atm codelet transport subcomponent
@@ -1014,6 +1006,26 @@ ixAtmUtilsMbufFree (IX_OSAL_MBUF *buf);
  */
 void
 ixAtmUtilsMbufShow (void);
+
+
+/**
+ * @brief Get the total number of MBUF in the pool
+ *
+ * @return none
+ *
+ */
+void
+ixAtmUtilsMbufPoolSizeGet (UINT32 bufSize, UINT32 *total);
+
+
+/**
+ * @brief Get the total number of unused MBUF in the pool
+ *
+ * @return none
+ *
+ */
+void
+ixAtmUtilsMbufPoolFreeGet (UINT32 bufSize, UINT32 *avail);
 
 /**
  * @brief Setup the ATM codelet to use 8VBR, 8CBR, and 16UBR VCs

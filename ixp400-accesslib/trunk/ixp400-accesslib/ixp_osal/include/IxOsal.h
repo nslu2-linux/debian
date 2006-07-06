@@ -556,10 +556,9 @@ PUBLIC IX_STATUS ixOsalThreadStart (IxOsalThread * thread);
  * @li Reentrant: no
  * @li IRQ safe:  no
  *
- * @note It is not possible to kill threads in Linux kernel mode. This 
- * function will only send a SIGTERM signal, and it is the responsibility
- * of the thread to check for the presence of this signal with
- * signal_pending().
+ * @note This function does not guarentee the thread get kill in Linux. The
+ * thread must use ixOsalThreadStopCheck to check if it should perform cleanup
+ * and suicide whenever this API is being used to kill a thread.
  *
  * @return -  IX_SUCCESS/IX_FAIL
  */
@@ -629,6 +628,21 @@ PUBLIC IX_STATUS ixOsalThreadSuspend (IxOsalThread * thread);
  */
 PUBLIC IX_STATUS ixOsalThreadResume (IxOsalThread * thread);
 
+
+/** 
+ * @ingroup IxOsal
+ *
+ * @brief Check if thread should stop execution
+ *
+ * Check if ixOsalThreadKill has been called. When this API return TRUE, the
+ * thread should perform cleanup and exit.
+ *
+ * @li Reentrant: no
+ * @li IRQ safe:  no
+ *
+ * @return - TRUE/FALSE
+ */
+PUBLIC BOOL ixOsalThreadStopCheck(void);
 
 /* =======================  Message Queues (IPC) ==========================
  * 

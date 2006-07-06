@@ -73,7 +73,7 @@ static int __init ethAal5_init_module(void)
 	printk("\n           2 = ADSL");
 	printk("\n");
 
-        return 1;
+        return -EINVAL;
     }
 
     ixEthAal5AppCodeletMain(modeType);

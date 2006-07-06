@@ -64,72 +64,47 @@
  * This string will be updated with each customer release of the IXP400
  * Software.
  */
-#define IX_VERSION_ID "2_1"
+#define IX_VERSION_ID "2_1_1"
 
 /**
  * This string will be updated with each customer release of the IXP400
  * ADSL driver package.
  */
-#define IX_VERSION_ADSL_ID "1_13"
+#define IX_VERSION_ADSL_ID "1_13_1"
 
 
 /**
  * This string will be updated with each customer release of the IXP400
  * USB Client driver package.
  */
-#define IX_VERSION_USBRNDIS_ID "1_10"
+#define IX_VERSION_USBRNDIS_ID "1_10_1"
 
 /**
  * This string will be updated with each customer release of the IXP400
  * I2C Linux* driver package.
  */
-#define IX_VERSION_I2C_LINUX_ID "1_0"
+#define IX_VERSION_I2C_LINUX_ID "1_0_1"
 
 /**
  * @brief Linux* Ethernet Driver Patch Version Identifier String
  *
  * This string will be updated with each release of Linux* Ethernet Patch
  */
-#define LINUX_ETHERNET_DRIVER_PATCH_ID "1_5"
-
-/**
- * @brief Linux* Integration Patch Version Identifier String
- *
- * This String will be updated with each release of Linux* Integration Patch
- */
-#define LINUX_INTEGRATION_PATCH_ID "1_3"
+#define LINUX_ETHERNET_DRIVER_PATCH_ID "1_5_1"
 
 /**
  * @brief Linux* Ethernet Readme version Identifier String
  *
  * This string will be updated with each release of Linux* Ethernet Readme
  */
-#define LINUX_ETHERNET_README_ID "1_5"
-
-/**
- * @brief Linux* Integration Readme version Identifier String
- *
- * This string will be updated with each release of Linux* Integration Readme
- */
-
-#define LINUX_INTEGRATION_README_ID "1_3"
+#define LINUX_ETHERNET_README_ID "1_5_1"
 
 /**
  * @brief Linux* I2C driver Readme version Identifier String
  *
  * This string will be updated with each release of Linux* I2C Driver Readme
  */
-#define LINUX_I2C_DRIVER_README_ID "1_0"
-
-/**
- * @brief ixp400_eth_update_nf_bridge.patch version Identifier String
- *
- * This string will be updated with each release of ixp400_eth_update_nf_bridge.
-patch
- *
- */
-
-#define IXP425_ETH_UPDATE_NF_BRIDGE_ID "1_3"
+#define LINUX_I2C_DRIVER_README_ID "1_0_1"
 
 /**
  * @brief Internal Release Identifier String
@@ -137,7 +112,7 @@ patch
  * This string will be updated with each internal release (SQA drop)
  * of the IXP400 Software.
  */
-#define IX_VERSION_INTERNAL_ID "SQA4_1"
+#define IX_VERSION_INTERNAL_ID "SQA2_1"
 
 /**
  * @brief Compatible Tornado Version Identifier
@@ -147,7 +122,7 @@ patch
 /**
  * @brief Compatible Linux* Version Identifier
  */
-#define IX_VERSION_COMPATIBLE_LINUX "MVL3_1"
+#define IX_VERSION_COMPATIBLE_LINUX "MVL4_0"
 
 
 #endif /* IXVERSIONID_H */

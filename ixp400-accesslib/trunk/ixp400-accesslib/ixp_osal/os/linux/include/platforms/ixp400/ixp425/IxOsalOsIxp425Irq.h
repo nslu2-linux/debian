@@ -1,19 +1,19 @@
 /**
- * @file IxOsalOs.h
+ * @file IxOsalOsIxp425Irq.h
  *
- * @brief linux-specific defines 
+ * @brief Defining IXP425 IRQ vector name in an array for retrieval by private
+ * function ixOsalGetIrqNameByVector implemented in IxOsalOsServices.c.
  *
- * Design Notes:
  *
  * @par
- * IXP400 SW Release version 2.1
+ * IXP400 SW Release version  2.1
  * 
  * -- Copyright Notice --
- * 
+ *
  * @par
  * Copyright (c) 2001-2005, Intel Corporation.
  * All rights reserved.
- * 
+ *
  * @par
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,8 +26,8 @@
  * 3. Neither the name of the Intel Corporation nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
- * 
+ *
+ *
  * @par
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -40,55 +40,56 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- * 
- * 
+ *
+ *
  * @par
  * -- End of Copyright Notice --
  */
 
-#ifndef IxOsalOs_H
-#define IxOsalOs_H
+#ifndef IxOsalOsIxp425Irq_H
+#define IxOsalOsIxp425Irq_H
 
-#ifndef IX_OSAL_CACHED
-#error "Uncached memory not supported in linux environment"
-#endif
-
-#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
-#include <linux/dma-mapping.h>
-#include <asm/io.h>
-#else
-#include <linux/cache.h>
-#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
-#include <linux/mm.h>
-#include <linux/config.h>
-#include <asm/pgalloc.h>
-
-/**
- * Linux implementations of macros.
+/*
+ * IRQ name definition.
  */
+const char *irq_name[] = {
+    "IXP4XX NPE-A",	/* IRQ 0 */
+    "IXP4XX NPE-B",
+    "IXP4XX NPE-C",
+    "IXP4XX QM1",
+    "IXP4XX QM2",
+    "IXP4XX TIMER1",
+    "IXP4XX GPIO0",
+    "IXP4XX GPIO1",
+    "IXP4XX PCI",
+    "IXP4XX PCI DMA1",
+    "IXP4XX PCI DMA2",	/* IRQ 10 */
+    "IXP4XX TIMER2",
+    "IXP4XX USB",
+    "IXP4XX UART2",
+    "IXP4XX TIMESTAMP",
+    "IXP4XX UART1",
+    "IXP4XX WATCHDOG",
+    "IXP4XX AHB PMU",
+    "IXP4XX XSCALE PMU"
+    "IXP4XX GPIO2",	/* IRQ 20 */
+    "IXP4XX GPIO3",
+    "IXP4XX GPIO4",
+    "IXP4XX GPIO5",
+    "IXP4XX GPIO6",
+    "IXP4XX GPIO7",
+    "IXP4XX GPIO8",
+    "IXP4XX GPIO9",
+    "IXP4XX GPIO10",
+    "IXP4XX GPIO11",
+    "IXP4XX GPIO12",	/* IRQ 30 */
+    "IXP4XX SW1",
+    "IXP4XX SW2"
+};
 
-#define IX_OSAL_OS_MMU_VIRT_TO_PHYS(addr) ((addr) ? virt_to_phys((void*)(addr)) : 0)
+/*
+ * String to return when IRQ vector is invalid.
+ */
+const char *invalid_irq_name = "Invalid IXP42X IRQ";
 
-#define IX_OSAL_OS_MMU_PHYS_TO_VIRT(addr)  ((addr) ? phys_to_virt((unsigned int)(addr)) : 0)
-
-#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
-#define IX_OSAL_OS_CACHE_INVALIDATE(addr, size)  \
-    (consistent_sync((void*)addr, (size_t) size, DMA_FROM_DEVICE))
-
-#define IX_OSAL_OS_CACHE_FLUSH(addr, size) \
-    (consistent_sync((void*)addr, (size_t) size, DMA_TO_DEVICE))
-
-#else
-#define IX_OSAL_OS_CACHE_INVALIDATE(addr, size)  \
-    (invalidate_dcache_range((__u32)addr, (__u32)addr + size )) 
-
-#define IX_OSAL_OS_CACHE_FLUSH(addr, size) \
-    (clean_dcache_range((__u32)addr, (__u32)addr + size))
-#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
-
-/* Cache preload not available*/
-#define IX_OSAL_OS_CACHE_PRELOAD(addr,size) {}
-
-#define printf	printk /* For backword compatibility, needs to move to better location */
-
-#endif /* IxOsalOs_H */
+#endif /* IxOsalOsIxp425Irq_H */

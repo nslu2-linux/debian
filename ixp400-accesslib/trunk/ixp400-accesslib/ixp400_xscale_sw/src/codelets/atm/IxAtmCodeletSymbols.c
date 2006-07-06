@@ -69,24 +69,27 @@ MODULE_PARM(aalType, "i");
 static int __init atmdAcc_init_module(void)
 {
     printk ("Load Codelet: AtmdAcc Sample.\n");
-    if ((modeType < 0 || modeType > 4) || 
+    if ((modeType < 0 || modeType > 7) || 
 	(aalType <= ixAtmCodeletAalTypeInvalid || aalType >= ixAtmCodeletAalTypeMax))
     {
 	printk("\nUsage :");
 	printk("\n # insmod ixp400_codelets_atm.o modeType=<x> aalType=<y>");
 	printk("\n");	    
-	printk("\n Where x : 0 = Utopia Loopback Mode");
-	printk("\n           1 = Software Loopback Mode");
-	printk("\n           2 = Remote Loopback Mode");
-	printk("\n           3 = F4 & F5 cells OAM Ping in UTOPIA Loopback mode");
-	printk("\n           4 = F4 & F5 cells OAM Ping in Software Loopback mode");
+	printf("\n Where x : 0 = Utopia Loopback Mode 32 UBR");
+	printf("\n           1 = Utopia Loopback Mode 8VBR, 8CBR, 16UBR");
+	printf("\n           2 = Software Loopback Mode 32 UBR");
+	printf("\n           3 = Software Loopback Mode 8VBR, 8CBR, 16UBR");
+	printf("\n           4 = Remote Loopback Mode 32 UBR");
+	printf("\n           5 = Remote Loopback 8VBR, 8CBR, 16UBR");
+	printf("\n           6 = F4 & F5 cells OAM Ping in UTOPIA Loopback mode");
+	printf("\n           7 = F4 & F5 cells OAM Ping in Software Loopback mode");
 	printk("\n");
 	printk("\n Where y : 1 = AAL5");
 	printk("\n           2 = AAL0_48"); 
 	printk("\n           3 = AAL0_52"); 
 	printk("\n");
 
-        return 1;
+        return -EINVAL;
     }
 
     ixAtmCodeletMain(modeType,aalType);

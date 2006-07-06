@@ -45,9 +45,14 @@
  * -- End of Copyright Notice --
  */
 
-#include <linux/slab.h>
-#include <asm-arm/hardirq.h>
 #include "IxOsal.h"
+
+#include <linux/slab.h>
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+#include <linux/hardirq.h>
+#else
+#include <asm/hardirq.h>
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 
 /* Define a large number */
 #define IX_OSAL_MAX_LONG (0x7FFFFFFF)
@@ -93,7 +98,7 @@ ixOsalSemaphoreWait (IxOsalOsSemaphore * sid, INT32 timeout)
 {
 
     IX_STATUS ixStatus = IX_SUCCESS;
-    UINT32 timeoutTime;
+    unsigned long timeoutTime;
 
     if (sid == NULL)
     {
@@ -261,7 +266,7 @@ ixOsalMutexInit (IxOsalMutex * mutex)
 PUBLIC IX_STATUS
 ixOsalMutexLock (IxOsalMutex * mutex, INT32 timeout)
 {
-    UINT32 timeoutTime;
+    unsigned long timeoutTime;
 
     if (in_irq ())
     {
@@ -306,6 +311,7 @@ ixOsalMutexLock (IxOsalMutex * mutex, INT32 timeout)
     else
     {
         timeoutTime = jiffies + (timeout * HZ) / 1000;
+
         while (1)
         {
             if (!down_trylock (*mutex))
@@ -319,10 +325,13 @@ ixOsalMutexLock (IxOsalMutex * mutex, INT32 timeout)
                     return IX_FAIL;
                 }
             }
-                   
-						/* Switch to next running process instantly */
-            set_current_state(TASK_INTERRUPTIBLE);  
-						schedule_timeout(1);
+
+	    /* Switch to next running process if not in atomic state */
+	    if (!in_atomic())
+	    {
+		set_current_state(TASK_INTERRUPTIBLE);
+		schedule_timeout(1);
+	    }
         }                       /* End of while loop */
     }                           /* End of if */
     return IX_SUCCESS;

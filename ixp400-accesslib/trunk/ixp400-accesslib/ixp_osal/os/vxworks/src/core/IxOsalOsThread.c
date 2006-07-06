@@ -296,3 +296,10 @@ ixOsalThreadResume (IxOsalThread * tId)
     return IX_SUCCESS;
 
 }
+
+BOOL
+ixOsalThreadStopCheck()
+{
+    /* Yet to be implemented in vxWorks */
+    return FALSE;
+}

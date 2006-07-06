@@ -535,8 +535,7 @@ ixAtmCodeletUbrChannelsRemove (void)
    sent on the 1st channel configured and so on.
    -------------------------------------------------------------- */
 IX_STATUS
-ixAtmCodeletAal0PacketsSend (UINT32 cellsPerPacket,
-			     UINT32 numPackets)
+ixAtmCodeletAal0PacketsSend (UINT32 cellsPerPacket)
 {
     IX_STATUS retval;
 
@@ -548,7 +547,7 @@ ixAtmCodeletAal0PacketsSend (UINT32 cellsPerPacket,
 	return IX_FAIL;
     }
 
-    retval = ixAtmRxTxAal0PacketsSend (cellsPerPacket, numPackets);
+    retval = ixAtmRxTxAal0PacketsSend (cellsPerPacket);
 
     if (IX_SUCCESS != retval)
     {
@@ -569,8 +568,7 @@ ixAtmCodeletAal0PacketsSend (UINT32 cellsPerPacket,
    sent on the 1st channel configured and so on.
    -------------------------------------------------------------- */
 PUBLIC IX_STATUS
-ixAtmCodeletAal5CpcsSdusSend (UINT32 sduLength,
-			      UINT32 numSdus)
+ixAtmCodeletAal5CpcsSdusSend (UINT32 sduLength)
 {
     IX_STATUS retval;
 
@@ -580,7 +578,7 @@ ixAtmCodeletAal5CpcsSdusSend (UINT32 sduLength,
 	return IX_FAIL;
     }
 
-    retval = ixAtmRxTxAal5CpcsSdusSend (sduLength, numSdus);
+    retval = ixAtmRxTxAal5CpcsSdusSend (sduLength);
 
     if (IX_SUCCESS != retval)
     {

@@ -1572,7 +1572,7 @@ IX_STATUS ixEthInit(BOOL speed, BOOL duplex, BOOL autoneg)
             {
                 printf("%d ",i);
                 phyAddresses[j]=i;
-                j++;
+                ++j;
             }
         }
         printf("\n");

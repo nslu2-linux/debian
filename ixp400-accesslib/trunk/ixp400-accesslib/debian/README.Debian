@@ -24,21 +24,18 @@ instructions at
     http://psas.pdx.edu/DebianCrossCompilerHowto
 substituting "arm" instead of "powerpc" throughout the document.
 
-2. Unpack the module sources and the NPE microcode:
+2. Unpack the module sources:
 
   $ cd /usr/src                (or choose another directory)
   $ tar xjf /usr/src/ixp400-accesslib.tar.bz2
-  $ cd modules/ixp400-accesslib
-  $ unzip ~/IPL_ixp400NpeLibrary-2_1.zip
 
 3. Build the module with make-kpkg or module-assistant.
 
  (a) Building with make-kpkg
 
-  $ cd /usr/src/
-  $ cd /usr/src/linux-source-2.6.16
-  $ make-kpkg --arch=arm --cross-compile=arm-linux-gnu --added-modules=ixp400-accesslib modules_image
+  $ cd /usr/src/linux-source-2.6.17
+  $ make-kpkg --arch=arm --cross-compile=arm-linux-gnu- --added-modules=ixp400-accesslib modules_image
 
  (b) Building with module-assistant is not tested yet!
 
- -- Marcus Better <marcus@better.se>, Thu, 22 Jun 2006 09:39:31 +0200
+ -- Marcus Better <marcus@better.se>, Thu,  6 Jul 2006 09:54:49 +0200

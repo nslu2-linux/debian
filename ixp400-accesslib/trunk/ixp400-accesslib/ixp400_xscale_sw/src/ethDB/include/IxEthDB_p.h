@@ -490,8 +490,8 @@ typedef union
 
 typedef struct MacDescriptor_t
 {
-    UINT8 macAddress[IX_IEEE803_MAC_ADDRESS_SIZE];
-    
+    UINT8 macAddress[IX_IEEE803_MAC_ADDRESS_SIZE]; 
+
     __alignment__ UINT8 reserved1[2];
     
     UINT32 portID;
@@ -693,7 +693,7 @@ IX_ETH_DB_PUBLIC UINT32 ixEthDBEntryXORHash(void *macDescriptor);
 IX_ETH_DB_PUBLIC UINT32 ixEthDBKeyXORHash(void *macAddress);
 
 /* Port updates */
-IX_ETH_DB_PUBLIC IxEthDBStatus ixEthDBNPEUpdateHandler(IxEthDBPortId portID, IxEthDBFeature type);
+IX_ETH_DB_PUBLIC IxEthDBStatus ixEthDBNPEUpdateHandler(IxEthDBPortId portID, IxEthDBRecordType type);
 IX_ETH_DB_PUBLIC void ixEthDBUpdatePortLearningTrees(IxEthDBPortMap triggerPorts);
 IX_ETH_DB_PUBLIC void ixEthDBNPEAccessRequest(IxEthDBPortId portID);
 IX_ETH_DB_PUBLIC void ixEthDBUpdateLock(void);

@@ -63,22 +63,4 @@ EXPORT_SYMBOL(ixNpeMhMessagesReceive);
 EXPORT_SYMBOL(ixNpeMhShow);
 EXPORT_SYMBOL(ixNpeMhShowReset);
 
-extern void ixNpeMhConfigIsr (void *parameter);
-extern BOOL ixNpeMhConfigInFifoIsFull(IxNpeMhNpeId npeId);
-extern BOOL ixNpeMhConfigOutFifoIsEmpty (IxNpeMhNpeId npeId);
-extern void ixNpeMhConfigLockRelease (IxNpeMhNpeId npeId);
-extern void ixNpeMhConfigLockGet (IxNpeMhNpeId npeId);
-extern void ixNpeMhConfigOutFifoRead (IxNpeMhNpeId npeId,IxNpeMhMessage *message);
-extern void ixNpeMhConfigInFifoWrite (IxNpeMhNpeId npeId,IxNpeMhMessage message);
-extern struct ixNpeMhConfigNpeInfo ixNpeMhConfigNpeInfo[IX_NPEMH_NUM_NPES];
-
-EXPORT_SYMBOL(ixNpeMhConfigIsr);
-EXPORT_SYMBOL(ixNpeMhConfigInFifoIsFull);
-EXPORT_SYMBOL(ixNpeMhConfigOutFifoIsEmpty);
-EXPORT_SYMBOL(ixNpeMhConfigLockRelease);
-EXPORT_SYMBOL(ixNpeMhConfigLockGet);
-EXPORT_SYMBOL(ixNpeMhConfigOutFifoRead);
-EXPORT_SYMBOL(ixNpeMhConfigInFifoWrite);
-EXPORT_SYMBOL(ixNpeMhConfigNpeInfo);
-
 #endif /* __linux */

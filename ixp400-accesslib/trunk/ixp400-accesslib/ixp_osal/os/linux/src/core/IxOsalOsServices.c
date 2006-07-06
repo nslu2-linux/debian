@@ -45,17 +45,28 @@
  * -- End of Copyright Notice --
  */
 
+#include "IxOsal.h"
+
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+#include <linux/hardirq.h>
+#include <linux/interrupt.h>
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
+
+#include <linux/delay.h>
 #include <asm/hardirq.h>
 #include <asm/system.h>
 #include <asm/arch/irqs.h>
 #include <asm/irq.h>
-#include <linux/delay.h>
 #include <linux/kernel.h>
 #include <linux/time.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
 
-#include "IxOsal.h"
+#ifndef __ixp46X
+#include "IxOsalOsIxp425Irq.h"
+#else
+#include "IxOsalOsIxp465Irq.h"
+#endif
 
 /* 
  * Note: being referenced by some release 1.4 linux 
@@ -75,8 +86,9 @@ static char *traceHeaders[] = {
     "[all]"
 };
 
+
 /* by default trace all but debug message */
-PRIVATE int ixOsalCurrLogLevel = IX_OSAL_LOG_LVL_MESSAGE;
+PRIVATE IxOsalLogLevel ixOsalCurrLogLevel = IX_OSAL_LOG_LVL_MESSAGE;
 
 typedef struct IxOsalInfoType
 {
@@ -89,7 +101,25 @@ static IxOsalInfoType IxOsalInfo[NR_IRQS];
 /*
  * General interrupt handler
  */
+
+/* 
+ * Private utility function for ixOsalIrqBind to translate IRQ vector number to
+ * IRQ name.
+ */
+PRIVATE char*
+ixOsalGetIrqNameByVector(UINT32 vector)
+{
+    if (unlikely (ARRAY_SIZE(irq_name) < vector))
+	return ((char*)invalid_irq_name);
+
+    return ((char*)irq_name[vector]);
+}
+
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+static irqreturn_t
+#else
 static void
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 ixOsalOsIsrProxy (int irq, void *dev_id, struct pt_regs *regs)
 {
     IxOsalInfoType *isr_proxy_info = (IxOsalInfoType *) dev_id;
@@ -98,6 +128,10 @@ ixOsalOsIsrProxy (int irq, void *dev_id, struct pt_regs *regs)
 		   "ixOsalOsIsrProxy: Interrupt used before ixOsalIrqBind was invoked");
 
     isr_proxy_info->routine (isr_proxy_info->parameter);
+
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+    return IRQ_HANDLED;
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 }
 
 /*
@@ -105,11 +139,19 @@ ixOsalOsIsrProxy (int irq, void *dev_id, struct pt_regs *regs)
  * This handler saves the interrupted Program Counter (PC)
  * into a global variable
  */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+static irqreturn_t
+#else
 static void
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 ixOsalOsIsrProxyWithPC (int irq, void *dev_id, struct pt_regs *regs)
 {
     ixOsalLinuxInterruptedPc = regs->ARM_pc;
     ixOsalOsIsrProxy(irq, dev_id, regs);
+
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+    return IRQ_HANDLED;
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 }
 
 /**************************************
@@ -136,13 +178,18 @@ ixOsalIrqBind (UINT32 vector, IxOsalVoidFnVoidPtr routine, void *parameter)
      * In the case of the XScale PMU interrupt, the ixOsalOsIsrProxyWithPC
      * function is registered
      */
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+    if (vector == IRQ_IXP4XX_XSCALE_PMU)
+#else
     if (vector == IRQ_IXP425_XSCALE_PMU)
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
     {
 	/*
 	 * request_irq will enable interrupt automatically 
 	 * A non-zero return value suggest a failure.
 	 */
-	if (request_irq (vector, ixOsalOsIsrProxyWithPC, SA_SHIRQ, "osal",
+	if (request_irq (vector, ixOsalOsIsrProxyWithPC, SA_SHIRQ, 
+			ixOsalGetIrqNameByVector(vector),
 			 &IxOsalInfo[vector]))
 	{
 	    ixOsalLog (IX_OSAL_LOG_LVL_ERROR,
@@ -158,7 +205,8 @@ ixOsalIrqBind (UINT32 vector, IxOsalVoidFnVoidPtr routine, void *parameter)
 	 * request_irq will enable interrupt automatically 
 	 * A non-zero return value suggest a failure.
 	 */
-	if (request_irq (vector, ixOsalOsIsrProxy, SA_SHIRQ, "osal",
+	if (request_irq (vector, ixOsalOsIsrProxy, SA_SHIRQ,
+			ixOsalGetIrqNameByVector(vector),
 			 &IxOsalInfo[vector]))
 	{
 	    ixOsalLog (IX_OSAL_LOG_LVL_ERROR,
@@ -192,8 +240,15 @@ PUBLIC UINT32
 ixOsalIrqLock ()
 {
     UINT32 flags;
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+    /* local_irq_save() is not used here due to compilation warning against s32
+     * data type. */
+    local_save_flags(flags);
+    local_irq_disable();
+#else
     save_flags (flags);
     cli ();
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
     return flags;
 }
 
@@ -204,7 +259,11 @@ ixOsalIrqLock ()
 PUBLIC void
 ixOsalIrqUnlock (UINT32 lockKey)
 {
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+    local_irq_restore(lockKey);
+#else
     restore_flags (lockKey);
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 }
 
 PUBLIC UINT32

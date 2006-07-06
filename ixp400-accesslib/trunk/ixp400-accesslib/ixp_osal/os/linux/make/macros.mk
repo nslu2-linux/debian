@@ -88,10 +88,16 @@ AR := $(LINUX_CROSS_COMPILE)ar
 # Compiler & linker options
 
 # Compiler flags
-LINUX_MACH_CFLAGS := -D__LINUX_ARM_ARCH__=5 -mcpu=xscale -mtune=xscale
+ifeq ($(IX_LINUXVER), 2.6)
+    LINUX_MACH_CFLAGS := -D__LINUX_ARM_ARCH__=5 -march=armv5te -Wa,-mcpu=xscale -mtune=xscale
+    CFLAGS_ETC = -mabi=apcs-gnu
+else
+    LINUX_MACH_CFLAGS := -D__LINUX_ARM_ARCH__=5 -mcpu=xscale -mtune=xscale
+    CFLAGS_ETC = -mapcs-32 -mshort-load-bytes
+endif
 
 CFLAGS := -D__KERNEL__ -I$(LINUX_SRC)/include -Wall -Wno-trigraphs -fno-common \
-          -pipe -mapcs-32 -mshort-load-bytes -msoft-float -DMODULE \
+          -pipe $(CFLAGS_ETC) -msoft-float -DMODULE \
           -D__linux -DCPU=33 -DXSCALE=33 $(LINUX_MACH_CFLAGS) -DEXPORT_SYMTAB
 
 # Linux linker flags

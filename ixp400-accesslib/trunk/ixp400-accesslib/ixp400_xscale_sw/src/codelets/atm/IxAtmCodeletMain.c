@@ -74,6 +74,21 @@
 #define AAL5_PACKET_SEND_COUNT     32
 #define AAL0_PACKET_SEND_COUNT     32
 
+/* 
+ * Time in MS the packet sending thread should sleep when MBUF is running low.
+ * This is only applicable to UTOPIA loopback and remote loopback mode. This
+ * value is obtained from tuning experience on IXDP465 with 533Mhz silicon 
+ */
+#define PACKET_SEND_MS_SLEEP  80
+
+/*
+ * This is the divider for PACKET_SEND_MS_SLEEP when codelet mode is only
+ * sending packet but not receiving (remote loopback). These mode consumes less
+ * CPU resources and hence, require lesser sleeping time.
+ */
+#define PACKET_SEND_MS_SLEEP_DEVIDER 2
+
+
 /*
  * Typedef 
  */
@@ -91,6 +106,12 @@ IxAtmCodeletAalType ixAtmCodeletAalType = ixAtmCodeletAalTypeInvalid;
 
 /* Flag to enable OAM Ping */
 BOOL ixAtmCodeletOamPingF4F5Enabled = FALSE;
+
+/*
+ * Static variable
+ */
+/* Default to AAL5 Sleep time */
+static UINT32 loopSleepTime = PACKET_SEND_MS_SLEEP;
 
 /*
  * Function definitions
@@ -164,6 +185,7 @@ ixAtmCodeletMainUtopiaLoopbackRun (void)
 	retval = ixAtmCodeletUbrChannelsProvision (numPorts,
 						   IX_ATMCODELET_NUM_AAL5_CHANNELS,
 						   IX_ATMDACC_AAL5);
+	loopSleepTime = PACKET_SEND_MS_SLEEP;
     }
 
     /* AAL Type 0 with 48 bytes*/
@@ -175,6 +197,7 @@ ixAtmCodeletMainUtopiaLoopbackRun (void)
 	retval = ixAtmCodeletUbrChannelsProvision (numPorts,
 						   IX_ATMCODELET_NUM_AAL0_48_CHANNELS,
 						   IX_ATMDACC_AAL0_48);
+	loopSleepTime = PACKET_SEND_MS_SLEEP;
     }
 
     /* AAL Type 0 with 52 bytes */
@@ -186,6 +209,7 @@ ixAtmCodeletMainUtopiaLoopbackRun (void)
 	retval = ixAtmCodeletUbrChannelsProvision (numPorts,
 						   IX_ATMCODELET_NUM_AAL0_52_CHANNELS,
 						   IX_ATMDACC_AAL0_52);
+	loopSleepTime = PACKET_SEND_MS_SLEEP;
     }
 
     if (IX_SUCCESS != retval)
@@ -328,6 +352,10 @@ ixAtmCodeletMainRemoteLoopbackRun (void)
 	retval = ixAtmCodeletUbrChannelsProvision (numPorts,
 						   IX_ATMCODELET_NUM_AAL5_CHANNELS,
 						   IX_ATMDACC_AAL5);
+	/* Unlike UTOPIA loopback, remote loopback mode only send packets but
+	 * never process it. Hence, the sending thread sleeping time when
+	 * MBUF is full is theoritically half of the UTOPIA loopback mode. */
+	loopSleepTime = PACKET_SEND_MS_SLEEP / PACKET_SEND_MS_SLEEP_DEVIDER;
     }
 
     /* AAL Type 0 with 48 bytes */
@@ -339,6 +367,10 @@ ixAtmCodeletMainRemoteLoopbackRun (void)
 	retval = ixAtmCodeletUbrChannelsProvision (numPorts,
 						   IX_ATMCODELET_NUM_AAL0_48_CHANNELS,
 						   IX_ATMDACC_AAL0_48);
+	/* Unlike UTOPIA loopback, remote loopback mode only send packets but
+	 * never process it. Hence, the sending thread sleeping time when
+	 * MBUF is full is theoritically half of the UTOPIA loopback mode. */
+	loopSleepTime = PACKET_SEND_MS_SLEEP / PACKET_SEND_MS_SLEEP_DEVIDER;
     }
 
     /* AAL Type 0 with 52 bytes */
@@ -350,6 +382,10 @@ ixAtmCodeletMainRemoteLoopbackRun (void)
 	retval = ixAtmCodeletUbrChannelsProvision (numPorts,
 						   IX_ATMCODELET_NUM_AAL0_52_CHANNELS,
 						   IX_ATMDACC_AAL0_52);
+	/* Unlike UTOPIA loopback, remote loopback mode only send packets but
+	 * never process it. Hence, the sending thread sleeping time when
+	 * MBUF is full is theoritically half of the UTOPIA loopback mode. */
+	loopSleepTime = PACKET_SEND_MS_SLEEP / PACKET_SEND_MS_SLEEP_DEVIDER;
     }
 
     if (IX_SUCCESS != retval)
@@ -434,9 +470,10 @@ ixAtmCodeletMain(IxAtmCodeletMode modeType, IxAtmCodeletAalType aalType)
 	    break;
 
 	case IX_ATMCODELET_REMOTE_LOOPBACK_8VBR_8CBR_16UBR:
-		/* Setup to have 8VBR. 8CBR, 16 UBR VCs */
-		ixAtmUtilsAtmRtVcsSet();
+	    /* Setup to have 8VBR. 8CBR, 16 UBR VCs */
+	    ixAtmUtilsAtmRtVcsSet();
 	case IX_ATMCODELET_REMOTE_LOOPBACK:
+
 	    if (IX_SUCCESS != ixAtmCodeletMainRemoteLoopbackRun())
 	    {
 		IX_ATMCODELET_LOG ("Error Setting Remote Loopback\n");
@@ -597,13 +634,12 @@ ixAtmCodeletAal5SduSendTask (void)
 
     while (TRUE)
     {
-	IX_ATMCODELET_LOG ("\rSending Multiple %u Aal5 Packets...%c",
-			   AAL5_PACKET_SEND_COUNT,
+	IX_ATMCODELET_LOG ("\rSending Multiple Aal5 Packets...%c",
 			   stillRunning[stillRunningIndex++ & 3]);
 
 	/* Send some Aal5 Cpcs SDUs */
-	if (IX_SUCCESS != ixAtmCodeletAal5CpcsSdusSend (AAL5_CPCS_SDU_SEND_LENGTH,
-							AAL5_PACKET_SEND_COUNT))
+	if (IX_SUCCESS != ixAtmCodeletAal5CpcsSdusSend
+	    (AAL5_CPCS_SDU_SEND_LENGTH))
 	{
 	    IX_ATMCODELET_LOG ("Failed to send SDUs\n");
 	    return;
@@ -626,7 +662,7 @@ ixAtmCodeletAal5SduSendTask (void)
 	    t0 = ixOsalTimestampGet(); /* get t0 time stamp value */
 	}
        
-    ixOsalSleep (0);
+	ixOsalSleep (loopSleepTime);
     }
 }
 
@@ -644,13 +680,11 @@ ixAtmCodeletAal0SduSendTask (void)
 
     while (TRUE)
     {
-	IX_ATMCODELET_LOG ("\rSending Multiple %u Aal0 Packets...%c",
-			   AAL5_PACKET_SEND_COUNT,
+	IX_ATMCODELET_LOG ("\rSending Multiple Aal0 Packets...%c",
 			   stillRunning[stillRunningIndex++ & 3]);
 
 	/* Send some Aal0 Packets */
-	if (IX_SUCCESS != ixAtmCodeletAal0PacketsSend (AAL0_CELLS_SEND_LENGTH, 
-						       AAL0_PACKET_SEND_COUNT))
+	if (IX_SUCCESS != ixAtmCodeletAal0PacketsSend (AAL0_CELLS_SEND_LENGTH))
 	{
 	    IX_ATMCODELET_LOG ("Failed to send SDUs\n");
 	    return;
@@ -672,7 +706,8 @@ ixAtmCodeletAal0SduSendTask (void)
 
 	    t0 = ixOsalTimestampGet(); /* get t0 time stamp value */
 	}
-    ixOsalSleep (0);
+
+	ixOsalSleep (loopSleepTime);
     }
 }
 

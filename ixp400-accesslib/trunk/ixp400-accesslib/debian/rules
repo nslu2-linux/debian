@@ -4,10 +4,6 @@ include /usr/share/quilt/quilt.make
 
 PROJECT=	ixp400-accesslib
 
-# select the components to build
-COMPONENTS = "qmgr npeMh npeDl ethAcc ethDB ethMii featureCtrl osServices oslinux"
-CODELETS_COMPONENTS = ""
-
 IX_TARGET=	linuxle
 OSAL_DIR=	$(CURDIR)/ixp_osal
 XSCALE_SW_DIR=	$(CURDIR)/ixp400_xscale_sw
@@ -15,16 +11,12 @@ XSCALE_SW_DIR=	$(CURDIR)/ixp400_xscale_sw
 COMMON_FLAGS=	IX_TARGET=$(IX_TARGET) \
 		IX_DEVICE=ixp42X \
 		LINUX_SRC=$(KSRC) \
-		LINUX_CROSS_COMPILE=arm-linux-gnu-
+		LINUX_CROSS_COMPILE=$(CROSS_COMPILE)
 
 OSAL_FLAGS=	$(COMMON_FLAGS)
 XSCALE_SW_FLAGS= \
 		$(COMMON_FLAGS) \
-		IX_XSCALE_SW=$(XSCALE_SW_DIR) \
-		$(IX_TARGET)_COMPONENTS=$(COMPONENTS) \
-		$(IX_TARGET)_CODELETS_COMPONENTS=$(CODELETS_COMPONENTS) \
-		IX_UTOPIAMODE=0 \
-		IX_MPHYSINGLEPORT=1
+		IX_XSCALE_SW=$(XSCALE_SW_DIR)
 
 configure: configure-stamp
 configure-stamp: patch
@@ -78,19 +70,6 @@ binary-indep: build install
 	dh_builddeb -i
 
 binary-arch: build install
-# 	dh_testdir -s
-# 	dh_testroot -s
-# 	dh_installdocs -s
-# 	dh_installchangelogs ChangeLog -s
-# 	dh_strip -s
-# 	dh_link -s
-# 	dh_compress -s
-# 	dh_fixperms -s
-# 	dh_installdeb -s
-# 	dh_shlibdeps -s
-# 	dh_gencontrol -s
-# 	dh_md5sums -s
-# 	dh_builddeb -s
 
 binary: binary-indep binary-arch
 .PHONY: build build-arch build-indep clean clean-patched binary-indep binary-arch binary install configure binary-modules kdist kdist_config kdist_image kdist_clean
@@ -114,7 +93,7 @@ binary-modules: kdist_config
 	dh_clean -k
 # build and install the module
 	$(MAKE) -C $(OSAL_DIR) $(OSAL_FLAGS) module
-	$(MAKE) -C $(XSCALE_SW_DIR) $(XSCALE_SW_FLAGS) kmodule
+	$(MAKE) -C $(XSCALE_SW_DIR) $(XSCALE_SW_FLAGS) ixp400.ko
 	install -m644 -b -D $(XSCALE_SW_DIR)/lib/$(IX_TARGET)/ixp400.ko $(CURDIR)/debian/$(PKGNAME)/lib/modules/$(KVERS)/ixp400/ixp400.ko
 	dh_installdocs 
 	dh_installchangelogs

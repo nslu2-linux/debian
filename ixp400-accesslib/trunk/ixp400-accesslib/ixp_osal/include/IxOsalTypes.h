@@ -199,6 +199,19 @@ typedef volatile INT32 VINT32;
 #define IX_OSAL_INLINE_EXTERN IX_OSAL_INLINE extern
 #endif
 
+
+/**
+ @ingroup IxOsalTypes
+ *
+ * @def IX_OSAL_ATTRIBUTE_PACKED
+ *
+ * @brief Defining packed attribute type for compiler that supports it.
+ *
+ */
+#ifndef IX_OSAL_ATTRIBUTE_PACKED
+#define IX_OSAL_ATTRIBUTE_PACKED IX_OSAL_OS_ATTRIBUTE_PACKED
+#endif
+
 /**
  * @ingroup IxOsalTypes
  * @enum IxOsalLogDevice

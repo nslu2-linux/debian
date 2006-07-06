@@ -171,3 +171,59 @@ ixAtmUtilsMbufShow (void)
 	}
     }
 }
+
+void
+ixAtmUtilsMbufPoolSizeGet (UINT32 bufSize, UINT32 *total)
+{
+    IX_OSAL_MBUF_POOL *poolPtr = NULL;
+    unsigned i,numPools;
+
+    numPools = NUMELEMS (poolInfo);
+
+    for (i = 0; i < numPools; i++)
+    {
+        if (poolInfo[i].bufSize >= bufSize)
+	{
+            poolPtr = poolInfo[i].poolPtr;
+            break;
+	}
+    }
+
+    if (poolPtr == NULL)
+    {
+        ixOsalLog (IX_OSAL_LOG_LVL_ERROR,IX_OSAL_LOG_DEV_STDERR,
+	    "ixAtmUtilsMbufPoolSizeGet - Invalid bufSize specified\n", 0, 0, 0, 0, 0, 0);
+	*total = 0;
+        return;
+    }
+
+    *total = poolPtr->totalBufsInPool;
+}
+
+void
+ixAtmUtilsMbufPoolFreeGet (UINT32 bufSize, UINT32 *avail)
+{
+    IX_OSAL_MBUF_POOL *poolPtr = NULL;
+    unsigned i,numPools;
+
+    numPools = NUMELEMS (poolInfo);
+
+    for (i = 0; i < numPools; i++)
+    {
+        if (poolInfo[i].bufSize >= bufSize)
+	{
+            poolPtr = poolInfo[i].poolPtr;
+            break;
+	}
+    }
+
+    if (poolPtr == NULL)
+    {
+        ixOsalLog (IX_OSAL_LOG_LVL_ERROR,IX_OSAL_LOG_DEV_STDERR,
+	    "ixAtmUtilsMbufPoolFreeGet - Invalid bufSize specified\n", 0, 0, 0, 0, 0, 0);
+	*avail = 0;
+        return;
+    }
+
+    *avail = poolPtr->freeBufsInPool;
+}

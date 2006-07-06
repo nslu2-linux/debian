@@ -79,6 +79,8 @@
 
 #define IX_OSAL_OS_WAIT_NONE	NO_WAIT
 
+#define IX_OSAL_OS_ATTRIBUTE_PACKED
+
 
 typedef unsigned int IxOsalOsThread;
 

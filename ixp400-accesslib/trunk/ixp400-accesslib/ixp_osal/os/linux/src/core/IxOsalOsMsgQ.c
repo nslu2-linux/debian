@@ -45,9 +45,9 @@
  * -- End of Copyright Notice --
  */
 #include <linux/linkage.h>
+#include <linux/spinlock.h>
 #include <linux/ipc.h>
 #include <linux/msg.h>
-#include <linux/spinlock.h>
 #include <linux/interrupt.h>
 
 #include "IxOsal.h"

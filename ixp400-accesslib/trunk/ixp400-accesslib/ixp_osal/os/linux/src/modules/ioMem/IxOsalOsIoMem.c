@@ -44,11 +44,13 @@
  * @par
  * -- End of Copyright Notice --
  */
+#include "IxOsal.h"
 
+#ifdef IX_OSAL_OS_LINUX_VERSION_2_6
+#include <asm/page.h>
+#endif /* IX_OSAL_OS_LINUX_VERSION_2_6 */
 #include <asm/io.h>
 #include <linux/ioport.h>
-
-#include "IxOsal.h"
 
 /* Linux-specific map/unmap functions to be used with dynamic maps */
 PUBLIC void

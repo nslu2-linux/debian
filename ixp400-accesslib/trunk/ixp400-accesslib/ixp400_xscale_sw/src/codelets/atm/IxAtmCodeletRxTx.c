@@ -73,6 +73,13 @@
 #define IX_ATMCODELET_TX_RETRY_CNT         (50)  /* Number of retries before failing to transmit a PDU */
 #define IX_ATMCODELET_TX_RETRY_DELAY       (100) /* Number of Ms to delay on retry */
 
+/* 
+ * Percentage(0 - 100) of free MBUF to be reserved for replenishment.
+ *
+ * Increase this value when MBUF under run occurs intermittently.
+ */
+#define IX_ATMCODELET_FREE_MBUF_PERCENTAGE (17)	 
+
 /*
   Aal5 PDU                      <------- trailer -------->
   +------------------------------------------------------+
@@ -290,7 +297,7 @@ ixAtmRxTxChannelsProvision (UINT32 numPorts,
 	    ixAtmRxTxRxVcInfoTable[ixAtmRxTx_channelIdx].bytesPerCell
             = IX_ATM_AAL0_48_CELL_PAYLOAD_SIZE;
 	}
-	
+
 	/* Verify whether ATM codelet is going to use Real-time VCs for
 	 ( UTOPIA/Remote loopback mode. Otherwise set to UBR VCs by default */
 	if (ixAtmUtilsAtmRtVcsGet())
@@ -375,13 +382,11 @@ ixAtmRxTxChannelsProvision (UINT32 numPorts,
    Send a number of PDUs on the registered channels.
    -------------------------------------------------------------- */
 IX_STATUS
-ixAtmRxTxAal0PacketsSend (UINT32 cellsPerPacket,
-			  UINT32 numPackets)
+ixAtmRxTxAal0PacketsSend (UINT32 cellsPerPacket)
 {
-    UINT32 pktCnt;
-    IX_STATUS retval;
     BOOL aal0Provisioned = FALSE;
     UINT32 channelIdx;
+    static UINT32 interruptedChannelIdx = 0;
 
     /* check that there are any Aal0 channels provisioned */
     for(channelIdx=0; channelIdx<ixAtmRxTxNumChannelsConfigured; channelIdx++ )
@@ -399,26 +404,38 @@ ixAtmRxTxAal0PacketsSend (UINT32 cellsPerPacket,
         return IX_FAIL;
     } 
 
-    for (pktCnt=0; pktCnt<numPackets;)
+    /*
+     * Keep sending until failed to transmit, and save the channel ID that being
+     * interrupted. The saved channel ID is used to resume sending at the last
+     * failed channel when this function is called next time. If sending is
+     * successful, increase the channel ID in order to perform transmission on
+     * next channel. Loop back to first channel if incremented channel ID is
+     * larger than the number of channel being configured.
+     */
+    for (channelIdx = interruptedChannelIdx; ;
+	     channelIdx = (channelIdx + 1) % ixAtmRxTxNumChannelsConfigured)
     {
-	/* For each Aal0 VC */
-	for (channelIdx=0; (pktCnt<numPackets) &&
-		 (channelIdx<ixAtmRxTxNumChannelsConfigured); channelIdx++ )
+	if ((ixAtmRxTxTxVcInfoTable[channelIdx].aalType == IX_ATMDACC_AAL0_48)||
+	    (ixAtmRxTxTxVcInfoTable[channelIdx].aalType == IX_ATMDACC_AAL0_52))
 	{
-	    if ((ixAtmRxTxTxVcInfoTable[channelIdx].aalType == IX_ATMDACC_AAL0_48) ||
-		(ixAtmRxTxTxVcInfoTable[channelIdx].aalType == IX_ATMDACC_AAL0_52))
+	    /*
+	     * Transmit packet. Break the loop if transmission failed. There are
+	     * a few scenario that this could happen:
+	     *
+	     * 1. Buffer under run (more likely). This is a safe fail condition,
+	     *    and hence, no error message will be printed on screen.
+	     *
+	     * 2. Hardware error that resulted tranmission to be failed
+	     *
+	     * 3. Invalid packet length
+	     *
+	     * 4. Buffer under run is not being detected, but failed to retrieve
+	     *    free MBUF.
+	     */
+	    if (ixAtmRxTxAal0Tx (channelIdx, cellsPerPacket) != IX_SUCCESS)
 	    {
-		retval = ixAtmRxTxAal0Tx (channelIdx,
-					      cellsPerPacket );
-		
-		if (retval == IX_SUCCESS)
-                {
-                        pktCnt++;
-                }
-                else
-		{
-		    IX_ATMCODELET_LOG ("Failed to send a pdu on channel...... %u\n", channelIdx);
-		}
+	    	interruptedChannelIdx = channelIdx; /* save failed channel ID */
+		break; /* Transmit failed, break off and wait for next round */
 	    }
 	}
     }
@@ -430,16 +447,14 @@ ixAtmRxTxAal0PacketsSend (UINT32 cellsPerPacket,
    Send a number of PDUs on the registered channels.
    -------------------------------------------------------------- */
 IX_STATUS
-ixAtmRxTxAal5CpcsSdusSend (UINT32 sduSize,
-			   UINT32 numSdus)
+ixAtmRxTxAal5CpcsSdusSend (UINT32 sduSize)
 {
-    UINT32 sduCnt;
-    IX_STATUS retval;
     UINT32 channelIdx;
     BOOL aal5Provisioned = FALSE;
+    static UINT32 interruptedChannelIdx = 0;
 
     /* check that there are any Aal0 channels provisioned */
-    for(channelIdx=0; channelIdx<ixAtmRxTxNumChannelsConfigured; channelIdx++ )
+    for(channelIdx=0; channelIdx < ixAtmRxTxNumChannelsConfigured; channelIdx++)
     {
         if  (ixAtmRxTxTxVcInfoTable[channelIdx].aalType == IX_ATMDACC_AAL5)
             {
@@ -453,31 +468,41 @@ ixAtmRxTxAal5CpcsSdusSend (UINT32 sduSize,
         return IX_FAIL;
     } 
 
-
-
-    for (sduCnt=0; sduCnt<numSdus;)
+    /*
+     * Keep sending until failed to transmit, and save the channel ID that being
+     * interrupted. The saved channel ID is used to resume sending at the last
+     * failed channel when this function is called next time. If sending is
+     * successful, increase the channel ID in order to perform transmission on
+     * next channel. Loop back to first channel if incremented channel ID is
+     * larger than the number of channel being configured.
+     */
+    for (channelIdx= interruptedChannelIdx; ;
+	     channelIdx = (channelIdx + 1) % ixAtmRxTxNumChannelsConfigured)
     {
-	/* For each Aal5 VC */
-	for (channelIdx=0; (sduCnt<numSdus) &&
-		 (channelIdx < ixAtmRxTxNumChannelsConfigured); channelIdx++, sduCnt++)
+	if (ixAtmRxTxTxVcInfoTable[channelIdx].aalType == IX_ATMDACC_AAL5)
 	{
-	    if (ixAtmRxTxTxVcInfoTable[channelIdx].aalType == IX_ATMDACC_AAL5)
+	    /*
+	     * Transmit packet. Break the loop if transmission failed. There are
+	     * a few scenario that this could happen:
+	     *
+	     * 1. Buffer under run (more likely). This is a safe fail condition,
+	     *    and hence, no error message will be printed on screen.
+	     *
+	     * 2. Hardware error that resulted tranmission to be failed
+	     *
+	     * 3. Invalid packet length
+	     *
+	     * 4. Buffer under run is not being detected, but failed to retrieve
+	     *    free MBUF.
+	     */
+	    if (ixAtmRxTxAal5CpcsTx (ixAtmRxTxTxVcInfoTable[channelIdx].connId,
+					  sduSize) != IX_SUCCESS)
 	    {
-		retval = ixAtmRxTxAal5CpcsTx (ixAtmRxTxTxVcInfoTable[channelIdx].connId,
-						  sduSize);
-		
-		if (retval != IX_SUCCESS)
-		{
-		    IX_ATMCODELET_LOG ("Failed to send a pdu on channel...... %u\n", channelIdx);
-		}
-	    }
-	    else
-	    {
-		/* decrement the sduCnt a sdu was not sent on this vc */
-		sduCnt--;
+	    	interruptedChannelIdx = channelIdx; /* save failed channel ID */
+	    	break; /* Transmit failed, break off and wait for next round */
 	    }
 	}
-    }    
+    }
 
     return IX_SUCCESS;    
 }
@@ -564,6 +589,8 @@ ixAtmRxTxAal0PacketBuild (int channelNum,
     UINT32 packetLen;
     UINT32 tmpLen;
     UINT32 cellDataSize = ixAtmRxTxTxVcInfoTable[channelNum].bytesPerCell;
+    UINT32 totalBuf = 0;
+    UINT32 availBuf = 0;
 
 
     /* Initialise the returned pointer */
@@ -575,6 +602,21 @@ ixAtmRxTxAal0PacketBuild (int channelNum,
     {
 	IX_ATMCODELET_LOG ("ixAtmRxTxAal0PacketBuild(): IX_ATMCODELET_MAX_PACKET_LEN < packetLen\n");
 	return IX_FAIL;
+    }
+
+    ixAtmUtilsMbufPoolSizeGet(packetLen, &totalBuf);
+    ixAtmUtilsMbufPoolFreeGet(packetLen, &availBuf);
+
+    /* Available buffer should be at least X percent of the total buffer to be
+     * reserved for replenishment */
+    if ((totalBuf == 0) || 
+    	(((availBuf * 100) / totalBuf) <= IX_ATMCODELET_FREE_MBUF_PERCENTAGE))
+    {
+    	/* 
+	 * Return as a failure case. But this is harmless failure, hence we
+	 * need not to print out paranoid error messages
+	 */
+    	return IX_FAIL;
     }
 
     /* Get the first buffer */
@@ -633,6 +675,8 @@ ixAtmRxTxAal5CpcsPduBuild (UINT32 sduLen,
 {
     int pduLen;
     unsigned char* trailer = NULL;
+    UINT32 totalBuf = 0; 
+    UINT32 availBuf = 0;
 
     if (IX_ATMCODELET_MAX_SDU_LEN < sduLen)
     {
@@ -663,6 +707,21 @@ ixAtmRxTxAal5CpcsPduBuild (UINT32 sduLen,
 
     /* Initialise the returned pointer */
     *mBuf = NULL;
+
+    ixAtmUtilsMbufPoolSizeGet(pduLen, &totalBuf);
+    ixAtmUtilsMbufPoolFreeGet(pduLen, &availBuf);
+
+    /* Available buffer should be at least X percent of the total buffer to be
+     * reserved for replenishment */
+    if ((totalBuf == 0) || 
+    	(((availBuf * 100) / totalBuf) <= IX_ATMCODELET_FREE_MBUF_PERCENTAGE))
+    {
+    	/* 
+	 * Return as a failure case. But this is harmless failure, hence we
+	 * need not to print out paranoid error messages
+	 */
+    	return IX_FAIL;
+    }
 
     /* Get the first buffer */
     ixAtmUtilsMbufGet (pduLen, mBuf);
@@ -815,7 +874,13 @@ ixAtmRxTxAal5CpcsTx (IxAtmConnId connId,
     /* Size of the data transmitted in CELLS */
     sizeInCells = IX_OSAL_MBUF_PKT_LEN(mBuf) / IX_ATM_CELL_PAYLOAD_SIZE;
 
-    return ixAtmRxTxWithRetiesSend (connId, mBuf, sizeInCells);
+    if (ixAtmRxTxWithRetiesSend (connId, mBuf, sizeInCells) != IX_SUCCESS)
+    {
+    	IX_ATMCODELET_LOG("ixAtmRxTxAal5CpcsTx send failed\n");
+	return IX_FAIL;
+    }
+
+    return IX_SUCCESS;
 }
 
 /* --------------------------------------------------------------
@@ -834,7 +899,14 @@ ixAtmRxTxAal0Tx (int channelNum,
 	return IX_FAIL;
     }
 
-    return ixAtmRxTxWithRetiesSend (ixAtmRxTxTxVcInfoTable[channelNum].connId, mBuf, sizeInCells);
+    if (ixAtmRxTxWithRetiesSend (ixAtmRxTxTxVcInfoTable[channelNum].connId,
+	    mBuf, sizeInCells) != IX_SUCCESS)
+    {
+    	IX_ATMCODELET_LOG("ixAtmRxTxAal0Tx send failed\n");
+	return IX_FAIL;
+    }
+
+    return IX_SUCCESS;
 }
 
 PRIVATE IX_STATUS

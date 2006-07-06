@@ -39,9 +39,6 @@
  * @par
  * -- End of Copyright Notice --
 */
-/* Non-Linux related headers */
-#include <IxFeatureCtrl.h>
-#include <IxNpeMh.h>
 
 /* Linux initialization */
 #ifdef __linux
@@ -51,7 +48,15 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <asm/uaccess.h>
+#include <linux/version.h>
 
+#ifdef CONFIG_DEVFS_FS
+#include <linux/devfs_fs_kernel.h>
+#endif
+
+/* Non-Linux related headers */
+#include <IxFeatureCtrl.h>
+#include <IxNpeMh.h>
 
 /******************************************************
  * Include File Operations functions and declarations *
@@ -61,6 +66,8 @@
 
 /* #defines, variables and forward declarations for file operations */
 #define DEV_IXNPE_MAJOR_NUMBER 241
+#define DEV_IXNPE_MINOR_NUMBER 0
+#define DEV_IXNPE_DEVFS_NAME "IxNpe"
 
 typedef struct 
 {
@@ -93,6 +100,9 @@ struct file_operations ixNpe_dev_fops = {
 /* Module parameters */
 static int livelock_dispatcher = 0;/* default: don't use livelock dispatcher*/
 
+#if KERNEL_VERSION(2,6,0) <= LINUX_VERSION_CODE
+MODULE_VERSION("2.1.1");
+#endif
 MODULE_PARM(livelock_dispatcher, "i");
 MODULE_PARM_DESC(livelock_dispatcher, "If non-zero, use the livelock prevention qmgr dispatcher");
 
@@ -117,6 +127,10 @@ static int __init ixp400_sw_init_module(void)
     /* Register driver for /dev/ixNpe */
     if (register_chrdev(DEV_IXNPE_MAJOR_NUMBER, "ixNpe", &ixNpe_dev_fops))
 	printk (KERN_ERR "Failed to register driver for /dev/ixNpe\n");
+#ifdef CONFIG_DEVFS_FS
+    devfs_mk_cdev(MKDEV(DEV_IXNPE_MAJOR_NUMBER, DEV_IXNPE_MAJOR_NUMBER),
+    	S_IFCHR | S_IWUGO, DEV_IXNPE_DEVFS_NAME);
+#endif /* CONFIG_DEVFS_FS */
 #endif /* IX_NPEDL_READ_MICROCODE_FROM_FILE */
 
     printk(KERN_DEBUG "ixp400: Module init.\n");
@@ -135,6 +149,9 @@ static void __exit ixp400_sw_cleanup_module(void)
     {
 	printk (KERN_ERR "Failed to unregister driver for /dev/ixNpe\n");
     }
+#ifdef CONFIG_DEVFS_FS
+    devfs_remove(DEV_IXNPE_DEVFS_NAME);
+#endif /* CONFIG_DEVFS_FS */
 #endif /* IX_NPEDL_READ_MICROCODE_FROM_FILE */
 
     printk(KERN_DEBUG "ixp400: Module uninit.\n");
@@ -156,11 +173,15 @@ int ixNpe_dev_open (struct inode *inode, struct file *file)
     /* Test to see if we've read in Microcode already */
     if (ixNpeMicrocode_binaryArray != NULL)
     {
-	printk (KERN_ERR "ixp400.o:  Microcode is already in memory.\n");
+	printk (KERN_ERR "ixp400:  Microcode is already in memory.\n");
 	return -EEXIST;
     }
 
+#if KERNEL_VERSION(2,6,0) <= LINUX_VERSION_CODE
+    try_module_get(THIS_MODULE);
+#else    
     MOD_INC_USE_COUNT;   /* Increment use count to prevent premature rmmod-ing */
+#endif
     ixNpeDlSegmentedListHead = NULL;  /* Reset linked list which keeps track of Microcode fragments */
     ixNpeDlSegmentedListTail = NULL;
     ixNpeDlTotalBytesReadIn = 0;
@@ -195,7 +216,7 @@ int ixNpe_dev_release (struct inode *inode, struct file *file)
 	ixNpeMicrocode_binaryArray = (UINT32 *)(__get_free_pages(GFP_KERNEL, ixNpeDlMicrocodePageOrder));
 	if (ixNpeMicrocode_binaryArray == NULL)
 	{
-	    printk (KERN_ERR "ixp400.o:  Error, couldn't get enough memory to store Microcode in (need %d pages).\n", pagesNeeded);
+	    printk (KERN_ERR "ixp400:  Error, couldn't get enough memory to store Microcode in (need %d pages).\n", pagesNeeded);
 	}
 	else
 	{
@@ -224,8 +245,11 @@ int ixNpe_dev_release (struct inode *inode, struct file *file)
 	kfree (temp->data);
 	kfree (temp);
     }
-
+#if KERNEL_VERSION(2,6,0) <= LINUX_VERSION_CODE
+    module_put(THIS_MODULE);
+#else
     MOD_DEC_USE_COUNT;
+#endif
 
     return 0;
 }
