@@ -1,3 +1,9 @@
+ixp400-accesslib (2.1.1-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Marcus Better <marcus@better.se>  Thu, 29 Jun 2006 09:21:48 +0200
+
 ixp400-accesslib (2.1-1) unstable; urgency=low
 
   * Initial release.
