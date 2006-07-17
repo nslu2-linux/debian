@@ -74,6 +74,10 @@
 #define IS_KERNEL26 0
 #endif
 
+#ifndef to_platform_device
+#include <linux/platform_device.h>
+#endif
+
 /*
  * Intel IXP400 Software specific header files
  */
@@ -134,30 +138,59 @@ static int dev_max_count = 3; /* all NPEs are used */
  * skbuf to push into the linux stack, and avoid the performance degradations 
  * during overflow.
  */
-static int netdev_max_backlog = 290;
+static int ixp400_netdev_max_backlog = 290;
 
 static int datapath_poll = 1;     /* default : rx/tx polling, not interrupt driven*/
 
-MODULE_PARM(netdev_max_backlog, "i");
-MODULE_PARM_DESC(netdev_max_backlog, "Should be set to the value of /proc/sys/net/core/netdev_max_backlog (perf affecting)");
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,16)
+MODULE_PARM(ixp400_netdev_max_backlog, "i");
+#else
+module_param(ixp400_netdev_max_backlog, int, 0644);
+#endif
+MODULE_PARM_DESC(ixp400_netdev_max_backlog, "Should be set to the value of /proc/sys/net/core/netdev_max_backlog (perf affecting)");
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,16)
 MODULE_PARM(datapath_poll, "i");
+#else
+module_param(datapath_poll, int, 0644);
+#endif
 MODULE_PARM_DESC(datapath_poll, "If non-zero, use polling method for datapath instead of interrupts");
 #endif /* CONFIG_IXP400_NAPI */
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,16)
 MODULE_PARM(npe_learning, "i");
+#else
+module_param(npe_learning, int, 0644);
+#endif
 MODULE_PARM_DESC(npe_learning, "If non-zero, NPE MAC Address Learning & Filtering feature will be enabled");
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,16)
 MODULE_PARM(log_level, "i");
+#else
+module_param(log_level, int, 0644);
+#endif
 MODULE_PARM_DESC(log_level, "Set log level: 0 - None, 1 - Verbose, 2 - Debug");
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,16)
 MODULE_PARM(no_ixp400_sw_init, "i");
+#else
+module_param(no_ixp400_sw_init, int, 0644);
+#endif
 MODULE_PARM_DESC(no_ixp400_sw_init, "If non-zero, do not initialise Intel IXP400 Software Release core components");
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,16)
 MODULE_PARM(no_phy_scan, "i");
+#else
+module_param(no_phy_scan, int, 0644);
+#endif
 MODULE_PARM_DESC(no_phy_scan, "If non-zero, use hard-coded phy addresses");
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,16)
 MODULE_PARM(phy_reset, "i");
+#else
+module_param(phy_reset, int, 0644);
+#endif
 MODULE_PARM_DESC(phy_reset, "If non-zero, reset the phys");
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,16)
 MODULE_PARM(dev_max_count, "i");
+#else
+module_param(dev_max_count, int, 0644);
+#endif
 MODULE_PARM_DESC(dev_max_count, "Number of devices to initialize");
-
-/* devices will be called ixp0 and ixp1 */
-#define DEVICE_NAME "ixp"
 
 /* boolean values for PHY link speed, duplex, and autonegotiation */
 #define PHY_SPEED_10    0
@@ -211,7 +244,7 @@ MODULE_PARM_DESC(dev_max_count, "Number of devices to initialize");
  * high traffic rates. To measure the maximum throughput between the
  * ports of the driver,
  * - Modify /proc/sys/net/core/netdev_max_backlog value in the kernel 
- * - Adjust netdev_max_backlog=n in the driver's command line
+ * - Adjust ixp400_netdev_max_backlog=n in the driver's command line
  * in order to get the best rates depending on the testing tool 
  * and the OS load.
  *
@@ -346,6 +379,12 @@ static int dev_pmu_timer_init(void);
 /* internal Ethernet Access layer entry point */
 extern void 
 ixEthTxFrameDoneQMCallback(IxQMgrQId qId, IxQMgrCallbackId callbackId);
+
+#ifdef CONFIG_NET_POLL_CONTROLLER
+/* poll controller (needed for netconsole et al) */
+static void
+ixp425eth_poll_controller(struct net_device *dev);
+#endif
 
 /* Private device data */
 typedef struct {
@@ -1364,9 +1403,10 @@ static int dev_media_check_thread (void* arg)
 	
 	    if (res != IX_SUCCESS)
 	    {
-		P_WARN("ixEthMiiLinkStatus failed on PHY%d.\n"
+		P_WARN("%s: ixEthMiiLinkStatus failed on PHY%d.\n"
 		       "\tCan't determine\nthe auto negotiated parameters. "
 		       "Using default values.\n",
+		       dev->name,
 		       phyNum); 
 		/* something is bad, gracefully stops the loop */
 		priv->maintenanceCheckStopped = TRUE;
@@ -1575,7 +1615,7 @@ static int dev_pmu_timer_setup(void)
     if (request_irq(IX_OSAL_IXP400_XSCALE_PMU_IRQ_LVL,
                     dev_pmu_timer_os_isr,
                     SA_SHIRQ,
-                    DEVICE_NAME,
+                    MODULE_NAME,
                     (void *)IRQ_ANY_PARAMETER))
     {
         P_ERROR("Failed to reassign irq to PMU timer interrupt!\n");
@@ -1848,7 +1888,11 @@ static inline void dev_eth_type_trans(unsigned int mflags,
     skb->len -= header_len;
    
     /* fill the pkt arrival time (set at the irq callback entry) */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,14)
     skb->stamp = irq_stamp;
+#else
+    skb_set_timestamp(skb, &irq_stamp);
+#endif
  
     /* fill the input device field */
     skb->dev = dev;
@@ -1994,7 +2038,7 @@ static void rx_cb(UINT32 callbackTag, IX_OSAL_MBUF *mbuf, IxEthAccPortId portId)
     /* check if the system accepts more traffic and
      * against chained mbufs 
      */
-    if ((qlevel < netdev_max_backlog)
+    if ((qlevel < ixp400_netdev_max_backlog)
         && (IX_OSAL_MBUF_NEXT_PKT_IN_CHAIN_PTR(mbuf) == NULL))
 #else
     /* check against chained mbufs
@@ -2038,6 +2082,16 @@ static void rx_cb(UINT32 callbackTag, IX_OSAL_MBUF *mbuf, IxEthAccPortId portId)
 	skb->tail = skb->data + len;
 	skb->len = len;
 	
+#ifndef __ARMEB__
+	{
+	    /* Byte swap all words containing data from the buffer. */
+	    unsigned long *p = (unsigned long*)((unsigned)skb->data & ~0x3);
+	    unsigned long *e = (unsigned long*)(((unsigned)skb->data + skb->len + 3) & ~0x3);
+	    while (p < e)
+		*p = ntohl(*p), ++p;
+	}
+#endif
+
 #ifdef DEBUG_DUMP
 	skb_dump("rx", skb);
 #endif
@@ -2214,7 +2268,8 @@ static int port_enable(struct net_device *dev)
 	   IX_IEEE803_MAC_ADDRESS_SIZE);
     if ((res = ixEthAccPortUnicastMacAddressSet(priv->port_id, &npeMacAddr)))
     {
-        P_VERBOSE("Failed to set MAC address %2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x for port %d\n",
+        P_VERBOSE("%s: Failed to set MAC address %2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x for port %d\n",
+	       dev->name,
 	       (unsigned)npeMacAddr.macAddress[0],
 	       (unsigned)npeMacAddr.macAddress[1],
 	       (unsigned)npeMacAddr.macAddress[2],
@@ -2427,6 +2482,16 @@ static int dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
         }
 	return 0;
     }
+
+#ifndef __ARMEB__
+    {
+	/* Byte swap all words containing data from the buffer. */
+	unsigned long *p = (unsigned long*)((unsigned)skb->data & ~0x3);
+	unsigned long *e = (unsigned long*)(((unsigned)skb->data + skb->len + 3) & ~0x3);
+	while (p < e)
+	    *p = ntohl(*p), ++p;
+    }
+#endif
 
 #ifdef DEBUG_DUMP
     skb_dump("tx", skb);
@@ -2714,8 +2779,8 @@ static int do_dev_ioctl(struct net_device *dev, struct ifreq *req, int cmd)
 	    down (miiAccessMutex);     /* lock the MII register access mutex */
 	    if ((res = ixEthAccMiiReadRtn (data->phy_id, data->reg_num, &data->val_out)))
 	    {
-		P_ERROR("Error reading MII reg %d on phy %d\n",
-		       data->reg_num, data->phy_id);
+		P_ERROR("%s: Error reading MII reg %d on phy %d\n",
+		       dev->name, data->reg_num, data->phy_id);
 		res = -1;
 	    }
 	    up (miiAccessMutex);	/* release the MII register access mutex */
@@ -2727,8 +2792,8 @@ static int do_dev_ioctl(struct net_device *dev, struct ifreq *req, int cmd)
 	    down (miiAccessMutex);     /* lock the MII register access mutex */
 	    if ((res = ixEthAccMiiWriteRtn (data->phy_id, data->reg_num, data->val_in)))
 	    {
-		P_ERROR("Error writing MII reg %d on phy %d\n",
-                        data->reg_num, data->phy_id);
+		P_ERROR("%s: Error writing MII reg %d on phy %d\n",
+                        dev->name, data->reg_num, data->phy_id);
 		res = -1;
 	    }
 	    up (miiAccessMutex);	/* release the MII register access mutex */
@@ -2842,10 +2907,7 @@ static int qmgr_init(void)
     /* Initialise Queue Manager */
     P_VERBOSE("Initialising Queue Manager...\n");
     if ((res = ixQMgrInit()))
-    {
-	P_ERROR("Error initialising queue manager!\n");
-	return -1;
-    }
+	P_ERROR("Error initialising queue manager, trying to continue!\n");
 
     TRACE;
 
@@ -2856,7 +2918,7 @@ static int qmgr_init(void)
 
     if (request_irq(IX_OSAL_IXP400_QM1_IRQ_LVL,
                     dev_qmgr_os_isr,
-                    SA_SHIRQ,
+                    SA_SHIRQ | SA_SAMPLE_RANDOM,
                     MODULE_NAME,
                     (void *)IRQ_ANY_PARAMETER))
     {
@@ -3027,8 +3089,8 @@ static int phy_init(void)
 	if (port_id == IX_ETH_PORT_2) npe_id = "C";
 	if (port_id == IX_ETH_PORT_3) npe_id = "A";
 
-	P_INFO("%s%d is using NPE%s and the PHY at address %d\n",
-	       DEVICE_NAME, port_id, npe_id, phyAddresses[port_id]);
+	P_INFO("ethernet %d is using NPE%s and the PHY at address %d\n",
+	       dev_count, npe_id, phyAddresses[port_id]);
 
 	/* Set the MAC to the same duplex mode as the phy */
 	ixEthAccPortDuplexModeSet(port_id,
@@ -3040,7 +3102,7 @@ static int phy_init(void)
 }
 
 /* set port MAC addr and update the dev struct if successfull */
-int ixp400_dev_set_mac_address(struct net_device *dev, void *addr)
+static int ixp400_dev_set_mac_address(struct net_device *dev, void *addr)
 {
     int res;
     IxEthAccMacAddr npeMacAddr;
@@ -3059,7 +3121,8 @@ int ixp400_dev_set_mac_address(struct net_device *dev, void *addr)
     /* Set MAC addr in h/w (ethAcc checks for MAC address to be valid) */
     if ((res = ixEthAccPortUnicastMacAddressSet(priv->port_id, &npeMacAddr)))
     {
-        P_VERBOSE("Failed to set MAC address %2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x for port %d\n",
+        P_VERBOSE("%s: Failed to set MAC address %2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x for port %d\n",
+	       dev->name,
 	       (unsigned)npeMacAddr.macAddress[0],
 	       (unsigned)npeMacAddr.macAddress[1],
 	       (unsigned)npeMacAddr.macAddress[2],
@@ -3078,6 +3141,19 @@ int ixp400_dev_set_mac_address(struct net_device *dev, void *addr)
     return 0;
 }
 
+#ifdef CONFIG_NET_POLL_CONTROLLER
+/*
+ * Polling receive - used by netconsole and other diagnostic tools
+ * to allow network i/o with interrupts disabled.
+ * (stolen from 8139too.c by siddy)
+ */
+static void ixp425eth_poll_controller(struct net_device *dev)
+{
+        disable_irq(dev->irq);
+        dev_qmgr_os_isr(dev->irq, dev, NULL);
+        enable_irq(dev->irq);
+}
+#endif
 
 /* 
  *  TX QDISC
@@ -3236,9 +3312,6 @@ static int __devinit dev_eth_probe(struct net_device *ndev)
     /* set the private port ID */
     priv->port_id  = portId;
 
-    /* set device name */
-    sprintf(ndev->name, DEVICE_NAME"%d", priv->port_id);
-
     TRACE;
 
     /* initialize RX pool */
@@ -3270,6 +3343,8 @@ static int __devinit dev_eth_probe(struct net_device *ndev)
 	kmalloc(sizeof(struct semaphore), GFP_KERNEL);
     if (!priv->maintenanceCheckThreadComplete)
     {
+	P_ERROR("%s: Failed to allocate maintenance semaphore %d\n",
+		ndev->name, priv->port_id);
 	goto error;
     }
     priv->lock = SPIN_LOCK_UNLOCKED;
@@ -3294,6 +3369,9 @@ static int __devinit dev_eth_probe(struct net_device *ndev)
     ndev->get_stats = dev_get_stats;
     ndev->set_multicast_list = ixp400_dev_set_multicast_list;
     ndev->flags |= IFF_MULTICAST;
+#ifdef CONFIG_NET_POLL_CONTROLLER
+    ndev->poll_controller = ixp425eth_poll_controller;
+#endif
 
     ndev->set_mac_address = ixp400_dev_set_mac_address;
 
@@ -3376,7 +3454,11 @@ static int __devinit dev_eth_probe(struct net_device *ndev)
 
 #if IS_KERNEL26
     if (register_netdev(ndev))
+    {
+	P_ERROR("%s: Failed to register netdevice %d\n",
+		ndev->name, priv->port_id);
     	goto error;
+    }
 #else
     found_devices++;
 #endif /* IS_KERNEL26 */
@@ -3386,6 +3468,8 @@ static int __devinit dev_eth_probe(struct net_device *ndev)
     /* register EthAcc callbacks for this port */
     if (dev_rxtxcallback_register(portId, (UINT32)ndev))
     {
+    	P_ERROR("%s: Failed to register callback %d\n",
+		ndev->name, priv->port_id);
     	goto error;
     }
 
@@ -3409,6 +3493,7 @@ static int __devinit dev_eth_probe(struct net_device *ndev)
 
 /* Error handling: enter here whenever error detected */
 error:
+    P_ERROR("%s: dev_eth_probe fails\n", ndev->name);
     TRACE;
 
 #ifdef CONFIG_IXP400_ETH_QDISC_ENABLED
@@ -3481,21 +3566,21 @@ static int __devexit dev_eth_remove(int dev_count)
 	{
 	    if (IX_SUCCESS != ixNpeDlNpeStopAndReset(IX_NPEDL_NPEID_NPEA))
 	    {
-		P_NOTICE("Error Halting NPE for Ethernet port %d!\n", portId);
+		P_NOTICE("%s: Error Halting NPE for Ethernet port %d!\n", ndev->name, portId);
 	    }
 	}
 	if (default_npeImageId[portId] == IX_ETH_NPE_B_IMAGE_ID)
 	{
 	    if (IX_SUCCESS != ixNpeDlNpeStopAndReset(IX_NPEDL_NPEID_NPEB))
 	    {
-		P_NOTICE("Error Halting NPE for Ethernet port %d!\n", portId);
+		P_NOTICE("%s: Error Halting NPE for Ethernet port %d!\n", ndev->name, portId);
 	    }
 	}
 	if (default_npeImageId[portId] == IX_ETH_NPE_C_IMAGE_ID)
 	{
 	    if (IX_SUCCESS != ixNpeDlNpeStopAndReset(IX_NPEDL_NPEID_NPEC))
 	    {
-		P_NOTICE("Error Halting NPE for Ethernet port %d!\n", portId);
+		P_NOTICE("%s: Error Halting NPE for Ethernet port %d!\n", ndev->name, portId);
 	    }
 	}
 
@@ -3543,6 +3628,9 @@ static int __init ixp400_eth_init(void)
     TRACE;
 
     P_INFO("Initializing IXP400 NPE Ethernet driver software v. " MOD_VERSION " \n");
+#ifdef IX_OSAL_ENSURE_ON
+    ixOsalLogLevelSet(IX_OSAL_LOG_LVL_ALL);
+#endif
 
     TRACE;
 
@@ -3747,13 +3835,13 @@ static int __init ixp400_eth_init(void)
 #ifndef CONFIG_IXP400_NAPI
     /* set the softirq rx queue thresholds 
      * (These numbers are based on tuning experiments)
-     * maxbacklog =  (netdev_max_backlog * 10) / 63;
+     * maxbacklog =  (ixp400_netdev_max_backlog * 10) / 63;
     */
-    if (netdev_max_backlog == 0)
+    if (ixp400_netdev_max_backlog == 0)
     {
-	netdev_max_backlog = 290; /* system default */
+	ixp400_netdev_max_backlog = 290; /* system default */
     }
-    netdev_max_backlog /= BACKLOG_TUNE;
+    ixp400_netdev_max_backlog /= BACKLOG_TUNE;
 
     TRACE;
 #endif
@@ -3769,9 +3857,16 @@ void __exit ixp400_eth_exit(void)
 
     TRACE;
 
-    /* We can only get here when the module use count is 0,
-     * so there's no need to stop devices.
-     */
+    /* stop devices */
+
+#if IS_KERNEL26
+    for (dev_count = 0;
+	 dev_count < dev_max_count;  /* module parameter */
+	 dev_count++)
+    {
+	do_dev_stop(platform_get_drvdata(&ixp400_eth_devices[dev_count]));
+    }
+#endif
 
     if (no_ixp400_sw_init == 0) /* module parameter */
     {
