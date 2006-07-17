@@ -105,7 +105,7 @@ MODULE_DESCRIPTION("IXP400 NPE Ethernet driver");
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Intel Corporation");
 #define MODULE_NAME "ixp400_eth"
-#define MOD_VERSION "1.5"
+#define MOD_VERSION "1.5.1"
 
 /* Module parameters */
 static int npe_learning = 1;      /* default : NPE learning & filtering enable */
@@ -437,7 +437,11 @@ static struct platform_device ixp400_eth_devices[IX_ETH_ACC_NUMBER_OF_PORTS] = {
     {
 #if IX_ETH_ACC_NUMBER_OF_PORTS > 0
 	.name 	= MODULE_NAME,
+#if CONFIG_IXP400_ETH_NPEC_ONLY
+	.id   	= IX_ETH_PORT_2,
+#else
 	.id   	= IX_ETH_PORT_1,
+#endif
 	.dev	= 
 	    {
 		.release	= dev_eth_release,
@@ -446,7 +450,11 @@ static struct platform_device ixp400_eth_devices[IX_ETH_ACC_NUMBER_OF_PORTS] = {
     },
     {
 	.name 	= MODULE_NAME,
+#if CONFIG_IXP400_ETH_NPEC_ONLY
+	.id   	= IX_ETH_PORT_1,
+#else
 	.id   	= IX_ETH_PORT_2,
+#endif
 	.dev	= 
 	    {
 		.release	= dev_eth_release,
@@ -955,7 +963,8 @@ static inline void dev_skb_enqueue(priv_data_t *priv, struct sk_buff *skb)
 #ifdef CONFIG_NETFILTER
 #if defined(CONFIG_BRIDGE) || defined(CONFIG_BRIDGE_MODULE)
 /* We need to free the memory attached to the nf_bridge pointer to avoid a memory leak */
-
+	nf_bridge_put(skb->nf_bridge);
+	skb->nf_bridge = NULL;
 #endif
 #endif /* CONFIG_NETFILTER */
 	skb->sk = NULL;
@@ -1267,7 +1276,7 @@ static int dev_media_check_thread (void* arg)
     int newDuplex;
     int autonegotiate;
     unsigned phyNum = phyAddresses[priv->port_id];
-    int res;
+    u32 res;
 
 
     TRACE;
@@ -1353,7 +1362,7 @@ static int dev_media_check_thread (void* arg)
 		break;
 	    }
 	
-	    if (res != IX_ETH_ACC_SUCCESS)
+	    if (res != IX_SUCCESS)
 	    {
 		P_WARN("ixEthMiiLinkStatus failed on PHY%d.\n"
 		       "\tCan't determine\nthe auto negotiated parameters. "
@@ -1627,6 +1636,7 @@ static void dev_qmgr_os_isr(int irg, void *dev_id, struct pt_regs *regs)
 
     /* call the queue manager entry point */
     dispatcherFunc(IX_QMGR_QUELOW_GROUP);
+
 #if IS_KERNEL26
     return IRQ_HANDLED;
 #endif
@@ -2073,7 +2083,7 @@ static void rx_cb(UINT32 callbackTag, IX_OSAL_MBUF *mbuf, IxEthAccPortId portId)
 }
 
 /* Set promiscuous/multicast mode for the MAC */
-static void dev_set_multicast_list(struct net_device *dev)
+static void ixp400_dev_set_multicast_list(struct net_device *dev)
 {
     int res;
 #if IS_KERNEL26
@@ -2470,6 +2480,15 @@ static int do_dev_open(struct net_device *dev)
 
     up(maintenance_mutex);
 
+    if (res == 0)
+    {
+#if IS_KERNEL26
+	try_module_get(THIS_MODULE);
+#else
+	MOD_INC_USE_COUNT;
+#endif
+    }
+
     return res;
 }
 
@@ -2491,10 +2510,11 @@ static int do_dev_stop(struct net_device *dev)
         for(dev_idx = 0; dev_idx < dev_max_count; dev_idx++)
         {
 #if IS_KERNEL26
-            tmp_dev = dev_get_drvdata(&ixp400_eth_devices[dev_idx]);
+	    tmp_dev = dev_get_drvdata(&ixp400_eth_devices[dev_idx].dev);
 #else
             tmp_dev = &ixp400_eth_devices[dev_idx];
 #endif
+
             if(netif_running(tmp_dev))
             {
                 rx_poll_dev = tmp_dev;
@@ -2513,6 +2533,12 @@ static int do_dev_stop(struct net_device *dev)
     port_disable(dev);
 
     up(maintenance_mutex);
+
+#if IS_KERNEL26
+    module_put(THIS_MODULE);
+#else
+    MOD_DEC_USE_COUNT;
+#endif
 
     return 0;
 }
@@ -3002,7 +3028,7 @@ static int phy_init(void)
 	if (port_id == IX_ETH_PORT_3) npe_id = "A";
 
 	P_INFO("%s%d is using NPE%s and the PHY at address %d\n",
-	       DEVICE_NAME, dev_count, npe_id, phyAddresses[port_id]);
+	       DEVICE_NAME, port_id, npe_id, phyAddresses[port_id]);
 
 	/* Set the MAC to the same duplex mode as the phy */
 	ixEthAccPortDuplexModeSet(port_id,
@@ -3014,7 +3040,7 @@ static int phy_init(void)
 }
 
 /* set port MAC addr and update the dev struct if successfull */
-int dev_set_mac_address(struct net_device *dev, void *addr)
+int ixp400_dev_set_mac_address(struct net_device *dev, void *addr)
 {
     int res;
     IxEthAccMacAddr npeMacAddr;
@@ -3167,7 +3193,7 @@ static int __devinit dev_eth_probe(struct net_device *ndev)
     priv_data_t *priv = NULL;
 #if IS_KERNEL26
     struct net_device *ndev = NULL;
-	IxEthAccPortId portId = to_platform_device(dev)->id;
+    IxEthAccPortId portId = to_platform_device(dev)->id;
     TRACE;
 
     BUG_ON(!(ndev = alloc_etherdev(sizeof(priv_data_t))));
@@ -3202,7 +3228,10 @@ static int __devinit dev_eth_probe(struct net_device *ndev)
 #endif
     /* Initialize the ethAcc port */
     if (ixEthAccPortInit(portId))
+    {
+    	printk(KERN_ERR "portId %i: No such device\n", portId);
         return -ENODEV;
+    }
 
     /* set the private port ID */
     priv->port_id  = portId;
@@ -3263,10 +3292,10 @@ static int __devinit dev_eth_probe(struct net_device *ndev)
     ndev->change_mtu = dev_change_mtu;
     ndev->do_ioctl = do_dev_ioctl;
     ndev->get_stats = dev_get_stats;
-    ndev->set_multicast_list = dev_set_multicast_list;
+    ndev->set_multicast_list = ixp400_dev_set_multicast_list;
     ndev->flags |= IFF_MULTICAST;
 
-    ndev->set_mac_address = dev_set_mac_address;
+    ndev->set_mac_address = ixp400_dev_set_mac_address;
 
 #ifdef CONFIG_IXP400_NAPI
     ndev->poll = &dev_rx_poll;
@@ -3508,7 +3537,6 @@ static int __init ixp400_eth_init(void)
     int res, dev_count;
 
 #if !IS_KERNEL26
-
     struct net_device *dev;
 #endif
 
@@ -3729,6 +3757,7 @@ static int __init ixp400_eth_init(void)
 
     TRACE;
 #endif
+
     return 0;
 }
 #endif /* IS_KERNEL26 || defined MODULE */
@@ -3779,13 +3808,15 @@ void __exit ixp400_eth_exit(void)
     for (dev_count = 0; 
 	 dev_count < dev_max_count;  /* module parameter */
 	 dev_count++)
-    {
 #if IS_KERNEL26
+    {
 	platform_device_unregister(&ixp400_eth_devices[dev_count]);
-#else
-    	dev_eth_remove(dev_count);
-#endif
     }
+#else
+    {
+    	dev_eth_remove(dev_count);
+    }
+#endif
 
     TRACE;
 
