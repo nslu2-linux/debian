@@ -1,0 +1,18 @@
+Index: ixp400-accesslib/ixp400_xscale_sw/Makefile
+===================================================================
+--- ixp400-accesslib.orig/ixp400_xscale_sw/Makefile	2006-07-17 22:16:02.000000000 +0200
++++ ixp400-accesslib/ixp400_xscale_sw/Makefile	2006-07-17 22:16:40.000000000 +0200
+@@ -904,13 +904,6 @@
+ 
+ 
+ ################################################################
+-# Generation of IxNpeMicrocode.dat
+-
+-ifeq ($(IX_HOST_OS),linux)
+-Makefile: $(NPE_CONVERTER) $(NPE_DAT)
+-endif
+-
+-################################################################
+ # Rules to check that macros are defined.
+ # Other targets can depend on these to ensure they have valid
+ # parameters.
