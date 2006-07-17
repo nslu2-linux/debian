@@ -1,0 +1,155 @@
+diff -Naur linux-2.6.11.5/drivers/net/Kconfig linux-2.6.11.5.new/drivers/net/Kconfig
+--- linux-2.6.11.5/drivers/net/Kconfig	2005-03-19 14:35:02.000000000 +0800
++++ linux-2.6.11.5.new/drivers/net/Kconfig	2005-03-23 14:27:29.000000000 +0800
+@@ -198,6 +198,102 @@
+ 
+ source "drivers/net/arm/Kconfig"
+ 
++config IXP400_ETH
++	tristate "Intel IXP400 Ethernet Device support"
++	requires m
++	depends NET_ETHERNET && ARM && (ARCH_IXP4XX)
++	---help---
++	  If you select M here, the Intel IXP400 Ethernet driver will be
++	  compiled as part of the build.
++ 
++	  In order for the driver to build correctly you must set up some
++	  environment variables before building the kernel. See the README
++	  files that accompany the IXP400 software or Linux Ethernet Driver
++	  distribution for details.
++ 
++	  Note that this driver is Intel proprietary code and must be obtained
++	  from Intel Corp. See the README files that accompany the IXP400
++	  software or Linux Ethernet Driver distribution for details.
++ 
++	  The driver can be compiled only as a module, as linking it
++	  statically into the kernel would violate the GPL. The module will be
++	  called ixp400_eth.ko
++ 
++	  Select M if you have the IXP400 ethernet driver source code and wish
++	  to include it in your build.
++
++choice 
++	prompt "Intel IXP400 Ethernet Device Driver NPE support"
++	depends IXP400_ETH
++	default IXP400_ETH_ALL
++	---help---
++	  If you select 'All NPEs' option here, the Intel IXP400 Ethernet driver
++	  will be compiled to configure all Ethernet NPEs and map "ixp0" device
++	  to Ethernet NPE B, "ixp1" device to Ethernet NPE C, and "ixp2" device
++	  to Ethernet NPE A (for IXP455 & IXP465 silicon only).
++ 
++	  If you select 'NPEB-only' option here, the Intel IXP400 Ethernet driver
++	  will be compiled to map "ixp0" device to Ethernet NPE B only.
++ 
++	  If you select 'NPEC-only' option here, the Intel IXP400 Ethernet driver
++	  will be compiled to map "ixp1" device to Ethernet NPE C only.
++ 
++	  See the README files that accompany the IXP400
++	  software or Linux Ethernet Driver distribution for details.
++
++config IXP400_ETH_ALL
++	bool "All_NPEs"
++
++config IXP400_ETH_NPEB_ONLY
++	bool "NPEB-Only"
++
++config IXP400_ETH_NPEC_ONLY
++	bool "NPEC-Only"
++
++endchoice
++
++config IXP400_ETH_SKB_RECYCLE
++	depends IXP400_ETH
++	bool "Intel IXP400 Ethernet Device Driver Fast Skb Recycling support"
++	---help---
++	  If you select Y here, the Intel IXP400 Ethernet driver will be
++	  compiled to internally recycle skbufs.
++ 
++	  IMPORTANT: This option, if enabled, may NOT work with some
++	  patched kernels.
++ 
++	  If unsure select N here.
++ 
++	  See the README files that accompany the IXP400
++	  software or Linux Ethernet Driver distribution for details.
++
++config IXP400_ETH_QDISC_ENABLED
++	depends IXP400_ETH
++	bool "Intel IXP400 Ethernet Device Driver Fast QDisc support"
++	---help---
++	  If you select Y here, the Intel IXP400 Ethernet driver will be
++	  compiled to internally use its own queueing discipline (qdisc).
++ 
++	  IMPORTANT: This option may NOT work with some debug tools or
++	  some kernel features.
++ 
++	  If unsure select N here.
++ 
++	  See the README files that accompany the IXP400
++	  software or Linux Ethernet Driver distribution for details.
++
++config IXP400_NAPI
++	depends IXP400_ETH
++	bool "Intel IXP400 Ethernet Device Driver NAPI support"
++	---help---
++	  If you select Y here, the Intel IXP400 Ethernet driver will be
++	  compiled to use the Linux kernel's NAPI polling interface.
++ 
++	  If unsure select N here.
++ 
++	  See the README files that accompany the IXP400
++	  software or Linux Ethernet Driver distribution for details.
++
+ config MACE
+ 	tristate "MACE (Power Mac ethernet) support"
+ 	depends on NET_ETHERNET && PPC_PMAC && PPC32
+diff -Naur linux-2.6.11.5/drivers/net/Makefile linux-2.6.11.5.new/drivers/net/Makefile
+--- linux-2.6.11.5/drivers/net/Makefile	2005-03-19 14:34:54.000000000 +0800
++++ linux-2.6.11.5.new/drivers/net/Makefile	2005-03-23 14:01:38.000000000 +0800
+@@ -1,6 +1,37 @@
+ #
+ # Makefile for the Linux network (ethercard) device drivers.
+ #
++OSAL_DIR := $(IX_XSCALE_SW)/../ixp_osal
++
++CFLAGS_ixp400_eth.o	= -DWall \
++			  -I$(IX_XSCALE_SW)/src/include \
++			  -I$(OSAL_DIR)/ \
++			  -I$(OSAL_DIR)/os/linux/include/ \
++			  -I$(OSAL_DIR)/os/linux/include/modules/ \
++			  -I$(OSAL_DIR)/os/linux/include/modules/ioMem/ \
++			  -I$(OSAL_DIR)/os/linux/include/modules/core/ \
++			  -I$(OSAL_DIR)/os/linux/include/modules/bufferMgt/ \
++			  -I$(OSAL_DIR)/os/linux/include/core/  \
++			  -I$(OSAL_DIR)/os/linux/include/platforms/ \
++			  -I$(OSAL_DIR)/os/linux/include/platforms/ixp400/ \
++			  -I$(OSAL_DIR)/os/linux/include/platforms/ixp400/ixp425 \
++			  -I$(OSAL_DIR)/os/linux/include/platforms/ixp400/ixp465 \
++			  -I$(OSAL_DIR)/os/linux/include/core/ \
++			  -I$(OSAL_DIR)/include/ \
++			  -I$(OSAL_DIR)/include/modules/ \
++			  -I$(OSAL_DIR)/include/modules/bufferMgt/ \
++			  -I$(OSAL_DIR)/include/modules/ioMem/ \
++			  -I$(OSAL_DIR)/include/modules/core/ \
++			  -I$(OSAL_DIR)/include/platforms/ \
++			  -I$(OSAL_DIR)/include/platforms/ixp400/ \
++			  -I$(OSAL_DIR)/include/platforms/ixp400/ixp425 \
++			  -I$(OSAL_DIR)/include/platforms/ixp400/ixp465
++
++ifeq ($(CONFIG_ARCH_IXDP465),y)
++CFLAGS_ixp400_eth.o += -D__ixp46X
++else
++CFLAGS_ixp400_eth.o += -D__ixp42X
++endif
+ 
+ ifeq ($(CONFIG_ISDN_PPP),y)
+   obj-$(CONFIG_ISDN) += slhc.o
+@@ -33,6 +64,7 @@
+ 
+ obj-$(CONFIG_OAKNET) += oaknet.o 8390.o
+ 
++obj-$(CONFIG_IXP400_ETH) += ixp400_eth.o
+ obj-$(CONFIG_DGRS) += dgrs.o
+ obj-$(CONFIG_VORTEX) += 3c59x.o
+ obj-$(CONFIG_TYPHOON) += typhoon.o
