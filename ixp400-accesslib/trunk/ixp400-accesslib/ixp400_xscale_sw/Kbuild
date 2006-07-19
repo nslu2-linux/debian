@@ -1,0 +1,2 @@
+obj-m           := ixp400.o
+ixp400-objs     := $(COMPONENTS:%=ixp400_%.o) $(OSAL_MODULE)
