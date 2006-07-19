@@ -3,9 +3,9 @@ IX_BYPASS_DEPS. Otherwise defining IX_BYPASS_DEPS breaks the compile.
 
 Index: ixp400-accesslib/ixp400_xscale_sw/Makefile
 ===================================================================
---- ixp400-accesslib.orig/ixp400_xscale_sw/Makefile	2006-07-19 15:17:34.000000000 +0200
-+++ ixp400-accesslib/ixp400_xscale_sw/Makefile	2006-07-19 15:17:41.000000000 +0200
-@@ -736,7 +736,7 @@
+--- ixp400-accesslib.orig/ixp400_xscale_sw/Makefile	2006-07-19 16:25:10.000000000 +0200
++++ ixp400-accesslib/ixp400_xscale_sw/Makefile	2006-07-19 16:25:15.000000000 +0200
+@@ -737,7 +737,7 @@
  # that unless IX_BYPASS_DEPS is defined, the output directories are
  # made anyway, because they depend on the %.d rule, which is processed
  # before this one.

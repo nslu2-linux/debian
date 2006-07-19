@@ -1,2 +1,3 @@
 obj-m           := ixp400.o
-ixp400-objs     := $(COMPONENTS:%=ixp400_%.o) $(OSAL_MODULE)
+lib-m		:= $(COMPONENTS:%=ixp400_%.o)
+ixp400-objs     := lib.a $(OSAL_MODULE)

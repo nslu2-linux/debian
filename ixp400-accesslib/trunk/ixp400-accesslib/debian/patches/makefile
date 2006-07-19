@@ -1,7 +1,7 @@
 Index: ixp400_xscale_sw/Makefile
 ===================================================================
---- ixp400_xscale_sw/Makefile.orig	2006-07-19 10:29:31.000000000 +0200
-+++ ixp400_xscale_sw/Makefile	2006-07-19 15:15:47.000000000 +0200
+--- ixp400_xscale_sw/Makefile.orig	2006-07-19 15:18:44.000000000 +0200
++++ ixp400_xscale_sw/Makefile	2006-07-19 15:45:59.000000000 +0200
 @@ -54,7 +54,7 @@
  # Components that work only for a subset of platforms
  # should be added to the relevant *_COMPONENTS lists.
@@ -89,7 +89,15 @@ Index: ixp400_xscale_sw/Makefile
      GNU_CFLAGS += -mcpu=xscale -mapcs-32 -mno-sched-prolog
      ifeq ($(IX_TARGET),vxle)
        CFLAGS += -DARMEL -D__ARMEL__ -DLITTLE_ENDIAN_MODE
-@@ -1216,7 +1210,7 @@
+@@ -558,6 +552,7 @@
+ 			$($(c)_EXPORT_OBJ:%=$(OBJ_DIR)/$(subst _,/,$(c))/%) \
+ 		   )
+ 
++export COMPONENTS
+ 
+ ################################################################
+ # Rules
+@@ -1216,7 +1211,7 @@
  define VXWORKS_CALL_BSP_MAKE
  	cd $(BSP_DIR) $(CMD_SEP) \
  	$(MAKE) $(VXWORKS_IMAGE_NAME) \
@@ -98,7 +106,7 @@ Index: ixp400_xscale_sw/Makefile
  	   IX_TARGET=$(IX_TARGET) IX_PLATFORM=$(IX_PLATFORM) IX_DEVICE=$(IX_DEVICE)
  	cp $(BSP_DIR)/$(VXWORKS_IMAGE_NAME) $@
  endef
-@@ -1370,33 +1364,22 @@
+@@ -1370,33 +1365,22 @@
  libIxp400 : $(OBJ_DIR)/libIxp400.a $(NPE_PRODUCTION_HEADER_OBJ) $(OSAL_MODULE)
  
  $(OBJ_DIR)/libIxp400.a : $(COMPONENT_OBJ) $(NPE_PRODUCTION_HEADER_OBJ) $(OSAL_MODULE) 
@@ -136,12 +144,12 @@ Index: ixp400_xscale_sw/Makefile
  else
  ixp400 : $(OBJ_DIR)/ixp400.o
  endif
-@@ -1406,6 +1389,11 @@
+@@ -1406,6 +1390,11 @@
  	$(LD) $(LDFLAGS) $^ -o $@
  endif
  
 +$(OBJ_DIR)/ixp400.ko: $(OBJ_DIR)/Makefile $(COMPONENTS:%=$(OBJ_DIR)/ixp400_%.o) $(OSAL_MODULE)
-+	$(MAKE) -C $(LINUX_SRC) COMPONENTS=$(COMPONENTS) OSAL_MODULE=$(shell pwd)/$(OSAL_MODULE) M=$(IX_XSCALE_SW)/$(OBJ_DIR)
++	$(MAKE) -C $(LINUX_SRC) OSAL_MODULE=$(OBJ_DIR_EXIT)/$(OSAL_MODULE) M=$(IX_XSCALE_SW)/$(OBJ_DIR) V=1
 +
 +$(OBJ_DIR)/Makefile: Kbuild
 +	cp $^ $@
