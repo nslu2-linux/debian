@@ -19,6 +19,20 @@ XSCALE_SW_FLAGS= \
 		$(COMMON_FLAGS) \
 		IX_XSCALE_SW=$(XSCALE_SW_DIR)
 
+# set the dpkg-architecture vars
+DPKG_ARCH := dpkg-architecture
+ha := -aarm
+export DEB_BUILD_ARCH      := $(shell $(DPKG_ARCH)       -qDEB_BUILD_ARCH)
+export DEB_BUILD_GNU_CPU   := $(shell $(DPKG_ARCH)       -qDEB_BUILD_GNU_CPU)
+export DEB_BUILD_GNU_SYSTEM:= $(shell $(DPKG_ARCH)       -qDEB_BUILD_GNU_SYSTEM)
+export DEB_BUILD_GNU_TYPE  := $(shell $(DPKG_ARCH)       -qDEB_BUILD_GNU_TYPE)
+export DEB_HOST_ARCH       := $(shell $(DPKG_ARCH) $(ha) -qDEB_HOST_ARCH)
+export DEB_HOST_ARCH_OS    := $(shell $(DPKG_ARCH) $(ha) -qDEB_HOST_ARCH_OS)
+export DEB_HOST_ARCH_CPU   := $(shell $(DPKG_ARCH) $(ha) -qDEB_HOST_ARCH_CPU)
+export DEB_HOST_GNU_CPU    := $(shell $(DPKG_ARCH) $(ha) -qDEB_HOST_GNU_CPU)
+export DEB_HOST_GNU_SYSTEM := $(shell $(DPKG_ARCH) $(ha) -qDEB_HOST_GNU_SYSTEM)
+export DEB_HOST_GNU_TYPE   := $(shell $(DPKG_ARCH) $(ha) -qDEB_HOST_GNU_TYPE)
+
 configure: configure-stamp
 configure-stamp: patch
 	dh_testdir
