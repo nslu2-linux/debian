@@ -71,15 +71,6 @@ Index: ixp400_xscale_sw/Makefile
  
  LD := $(LINUX_CROSS_COMPILE)ld
  CC := $(LINUX_CROSS_COMPILE)gcc
-@@ -329,6 +321,8 @@
- CFLAGS += -DIX_NPEDL_READ_MICROCODE_FROM_FILE
- 
- 
-+CFLAGS += -DIX_UTOPIAMODE=0 -DIX_MPHY=1 -DIX_MPHYSINGLEPORT
-+
- # Linux linker flags
- LDFLAGS := -r
- 
 @@ -404,7 +398,7 @@
    ifeq ($(IX_TARGET_OS),vxworks)
      LDFLAGS += -Wl
