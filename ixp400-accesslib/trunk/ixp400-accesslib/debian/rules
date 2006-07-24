@@ -97,7 +97,7 @@ MA_DIR ?= /usr/share/modass
 
 kdist_clean: prep-deb-files
 	dh_clean
-	find $(OSAL_DIR)/lib $(XSCALE_SW_DIR)/lib \( -name '*.d' -o -name '*.o' -o -name '*.a' \) -exec rm -f {} +
+	-find $(OSAL_DIR)/lib $(XSCALE_SW_DIR)/lib \( -name '*.d' -o -name '*.o' -o -name '*.a' \) -exec rm -f {} +
 
 kdist_config: prep-deb-files
 kdist_configure: kdist_config
