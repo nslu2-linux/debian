@@ -1,8 +1,8 @@
 Index: ixp400-accesslib/ixp400_xscale_sw/Makefile
 ===================================================================
---- ixp400-accesslib.orig/ixp400_xscale_sw/Makefile	2006-07-19 15:45:59.000000000 +0200
-+++ ixp400-accesslib/ixp400_xscale_sw/Makefile	2006-07-19 16:25:10.000000000 +0200
-@@ -891,13 +891,6 @@
+--- ixp400-accesslib.orig/ixp400_xscale_sw/Makefile	2006-07-25 11:45:06.000000000 +0200
++++ ixp400-accesslib/ixp400_xscale_sw/Makefile	2006-07-25 11:45:39.000000000 +0200
+@@ -889,13 +889,6 @@
  
  
  ################################################################

@@ -1,3 +1,5 @@
+EXTRA_LDFLAGS	:= --whole-archive
+
 obj-m           := ixp400.o
 lib-m		:= $(COMPONENTS:%=ixp400_%.o)
 ixp400-objs     := lib.a $(OSAL_MODULE)
