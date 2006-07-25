@@ -12,31 +12,30 @@ available in source form. You can download it from
 You need the NPE Microcode version 2.1 (without crypto). This gives
 you a file named IPL_ixp400NpeLibrary-2_1.zip.
 
+********************************************************************
+NOTE! This version of the package does not yet support automatic
+microcode loading. Hence it is quite useless except for developement
+and testing!
+********************************************************************
+
 
 Cross-compiling the ixp400 module
 ---------------------------------
 
 The module can be cross-compiled, in fact this is the only way I have
-tried.
+tried. You will need a cross-compiling toolchain. See
 
-1. Get a cross-toolchain for the ARM architecture. I followed the
-instructions at
-    http://psas.pdx.edu/DebianCrossCompilerHowto
-substituting "arm" instead of "powerpc" throughout the document.
+    http://wiki.debian.org/BuildingCrossCompilers
 
-2. Unpack the module sources:
+for instructions.
 
-  $ cd /usr/src
-  $ tar xjf /usr/src/ixp400-accesslib.tar.bz2
 
-3. Get a configured kernel source tree. You have two options:
+Building with module-assistant
+------------------------------
 
- (a) If you are building a kernel from a source package, i.e.,
-linux-source-2.6.17, you can use that to build the modules after
-building the kernel. (Use make-kpkg in step 4.)
-
- (b) If you are only building the modules, you need the appropriate
-linux-header packages. These must be converted with dpkg-cross if
+This is the recommended way to build the module for an official or
+pre-built Debian kernel package. You need the appropriate linux-header
+packages. These must be converted with dpkg-cross (1.30 or later) if
 you are cross-compiling:
 
   $ sudo dpkg-cross -a arm -i linux-headers-2.6.17-1_2.6.17-2_arm.deb
@@ -44,18 +43,26 @@ you are cross-compiling:
   $ sudo apt-get install linux-kbuild-2.6.17
   $ sudo ln -s /usr/src/linux-kbuild-2.6.17 /usr/arm-linux-gnu/src
 
-You can then use module-assistant in step 4.
-
-3. Build the module with make-kpkg or module-assistant.
-
- (a) Building with make-kpkg
-
-  $ cd /usr/src/linux-source-2.6.17
-  $ make-kpkg --arch=arm --cross-compile=arm-linux-gnu- --added-modules=ixp400-accesslib modules_image
-
- (b) Building with module-assistant:
-
   $ MA_DIR=~/modass         (choose any work directory for m-a)
   $ CROSS_COMPILE=arm-linux-gnu- module-assistant -u $MA_DIR -k /usr/arm-linux-gnu/src/linux-headers-2.6.17-1-nslu2 build ixp400-accesslib
 
- -- Marcus Better <marcus@better.se>, Tue, 25 Jul 2006 11:32:41 +0200
+
+Building with make-kpkg
+-----------------------
+
+If you are using make-kpkg to build a kernel from a source package
+like linux-source-2.6.17, you can build the modules at the same
+time. First, unpack the module sources:
+
+  $ cd /usr/src
+  $ tar xjf /usr/src/ixp400-accesslib.tar.bz2
+
+Then build, or at least configure, the kernel source tree with
+make-kpkg. Now build the kernel and modules:
+
+  $ cd /usr/src/linux-source-2.6.17
+  $ make-kpkg --arch=arm --cross-compile=arm-linux-gnu- \
+	--config=menuconfig \
+	--added-modules=ixp400-accesslib kernel_image modules_image
+
+ -- Marcus Better <marcus@better.se>, Tue, 25 Jul 2006 13:55:34 +0200
