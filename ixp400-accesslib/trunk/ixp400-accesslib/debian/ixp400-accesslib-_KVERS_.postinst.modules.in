@@ -1,6 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
+
+case "$1" in
+  configure|upgrade)
+    echo "creating /dev/ixNpe device..."
+    [ -c /dev/ixNpe ] || mknod /dev/ixNpe c 241 0
+  ;;
+
+  abort-upgrade|abort-remove|abort-deconfigure)
+  ;;
+
+  *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 1
+  ;;
+esac
 
 if [ "`uname -r`" = "_KVERS_" ]; then
 	/sbin/depmod -a

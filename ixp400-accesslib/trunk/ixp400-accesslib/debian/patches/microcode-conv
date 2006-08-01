@@ -1,0 +1,30 @@
+Index: ixp400-accesslib/ixp400_xscale_sw/Makefile
+===================================================================
+--- ixp400-accesslib.orig/ixp400_xscale_sw/Makefile	2006-07-25 17:11:30.000000000 +0200
++++ ixp400-accesslib/ixp400_xscale_sw/Makefile	2006-08-01 14:23:17.000000000 +0200
+@@ -878,6 +878,11 @@
+ NPE_DAT := $(IX_XSCALE_SW)/$(OBJ_DIR)/IxNpeMicrocode.dat
+ NPE_CONVERTER_SRC := $(IX_XSCALE_SW)/src/npeDl/ixNpeDlImageConverter.c
+ 
++.PHONY: microcode-converter
++microcode-converter: $(NPE_CONVERTER)
++
++.PHONY: microcode
++microcode: $(NPE_DAT)
+ 
+ $(NPE_CONVERTER) : $(NPE_CONVERTER_SRC)
+ 	cd $(IX_XSCALE_SW)/src/npeDl && \
+@@ -889,13 +894,6 @@
+ 
+ 
+ ################################################################
+-# Generation of IxNpeMicrocode.dat
+-
+-ifeq ($(IX_HOST_OS),linux)
+-Makefile: $(NPE_CONVERTER) $(NPE_DAT)
+-endif
+-
+-################################################################
+ # Rules to check that macros are defined.
+ # Other targets can depend on these to ensure they have valid
+ # parameters.

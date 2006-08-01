@@ -5,25 +5,14 @@ This package contains support software for Intel IXP400 network
 processors. It is intended for running Debian on the Linksys NSLU2.
 
 The software requires additional microcode, which is not
-available in source form. You can download it from
-
- http://www.intel.com/design/network/products/npfamily/ixp400_current.htm
-
-You need the NPE Microcode version 2.1 (without crypto). This gives
-you a file named IPL_ixp400NpeLibrary-2_1.zip.
-
-********************************************************************
-NOTE! This version of the package does not yet support automatic
-microcode loading. Hence it is quite useless except for developement
-and testing!
-********************************************************************
+available in source form. Read on for details.
 
 
 Cross-compiling the ixp400 module
 ---------------------------------
 
-The module can be cross-compiled, in fact this is the only way I have
-tried. You will need a cross-compiling toolchain. See
+The module can be cross-compiled, in fact this is the only way that
+has been tested. You will need a cross-compiling toolchain. See
 
     http://wiki.debian.org/BuildingCrossCompilers
 
@@ -44,14 +33,16 @@ you are cross-compiling:
   $ sudo ln -s /usr/src/linux-kbuild-2.6.17 /usr/arm-linux-gnu/src
 
   $ MA_DIR=~/modass         (choose any work directory for m-a)
-  $ CROSS_COMPILE=arm-linux-gnu- module-assistant -u $MA_DIR -k /usr/arm-linux-gnu/src/linux-headers-2.6.17-1-nslu2 build ixp400-accesslib
+  $ CROSS_COMPILE=arm-linux-gnu- module-assistant -u $MA_DIR \
+	-k /usr/arm-linux-gnu/src/linux-headers-2.6.17-1-nslu2 \
+	build ixp400-accesslib
 
 
 Building with make-kpkg
 -----------------------
 
 If you are using make-kpkg to build a kernel from a source package
-like linux-source-2.6.17, you can build the modules at the same
+(such as linux-source-2.6.17), you can build the modules at the same
 time. First, unpack the module sources:
 
   $ cd /usr/src
@@ -65,4 +56,37 @@ make-kpkg. Now build the kernel and modules:
 	--config=menuconfig \
 	--added-modules=ixp400-accesslib kernel_image modules_image
 
- -- Marcus Better <marcus@better.se>, Tue, 25 Jul 2006 13:55:34 +0200
+
+Building the microcode
+----------------------
+
+The microcode can be downloaded from
+
+  http://www.intel.com/design/network/products/npfamily/ixp400_current.htm
+
+You need the NPE Microcode version 2.1 (without crypto). This gives
+you a file named IPL_ixp400NpeLibrary-2_1.zip. A microcode blob must
+be built from this.
+
+First, unpack the module sources:
+
+  $ cd /usr/src
+  $ tar xjf /usr/src/ixp400-accesslib.tar.bz2
+
+Then convert the microcode:
+
+  $ cd /usr/src/modules/ixp400-accesslib
+  $ ./debian/rules microcode
+
+This leaves you with the file
+
+  ixp400_xscale_sw/lib/linuxle/IxNpeMicrocode.dat
+
+which must be installed in the /lib/firmware directory on the NSLU2
+target system. The ixp400 module will load this microcode
+automatically. It can also be loaded manually:
+
+  root@slug:~# cat /lib/firmware/IxNpeMicrocode.dat > /dev/ixNpe
+
+
+ -- Marcus Better <marcus@better.se>, Tue,  1 Aug 2006 15:14:18 +0200

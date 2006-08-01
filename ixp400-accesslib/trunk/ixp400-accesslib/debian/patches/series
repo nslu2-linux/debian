@@ -7,5 +7,5 @@ ixp400/mii-debug.patch -p0
 ixp400/rtl8201-support.patch -p0
 makefile -p0
 ixp400/module-param.patch -p0
-no-microcode-conv
+microcode-conv
 fix-deps-bypass
