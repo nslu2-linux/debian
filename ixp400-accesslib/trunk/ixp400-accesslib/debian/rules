@@ -112,9 +112,11 @@ binary-modules: kdist_config
 # build and install the module
 	$(MAKE) -C $(OSAL_DIR) $(OSAL_FLAGS) module
 	$(MAKE) -C $(XSCALE_SW_DIR) $(XSCALE_SW_FLAGS) ixp400
+	dh_installdirs
 	install -m644 -b -D $(XSCALE_SW_DIR)/lib/$(IX_TARGET)/ixp400.ko $(CURDIR)/debian/$(PKGNAME)/lib/modules/$(KVERS)/ixp400/ixp400.ko
 	dh_installdocs 
 	dh_installchangelogs
+	dh_install
 	dh_compress
 	dh_fixperms
 	dh_installdeb
