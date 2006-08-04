@@ -1,0 +1,1 @@
+install ixp400 modprobe --ignore-install ixp400 $CMDLINE_OPTS; test -e /lib/firmware/IxNpeMicrocode.dat && test -e /dev/ixNpe && cat /lib/firmware/IxNpeMicrocode.dat > /dev/ixNpe
