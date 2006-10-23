@@ -2,7 +2,7 @@ Source: ixp400-eth
 Section: misc
 Priority: optional
 Maintainer: Marcus Better <marcus@better.se>
-Build-Depends: debhelper (>> 5.0.0), bzip2
+Build-Depends: debhelper (>> 5.0.0), bzip2, ixp400-accesslib-module-_KVERS_-dev
 Standards-Version: 3.7.2
 
 Package: ixp400-eth-module-_KVERS_

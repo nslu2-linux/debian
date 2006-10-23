@@ -7,7 +7,6 @@ ixp400-eth/int-random.patch
 ixp400-eth/stop-on-rmmod.patch
 ixp400-eth/continue-if-qmgr-init-fails.patch
 ixp400-eth/debug.patch
-ixp400-eth/kbuild.patch
 ixp400-eth/netdev_max_backlog.patch
 ixp400-eth/module-param.patch
-kbuild.debian
+fix-ifdefs

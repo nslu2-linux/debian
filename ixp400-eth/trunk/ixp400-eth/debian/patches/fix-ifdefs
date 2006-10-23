@@ -1,0 +1,22 @@
+Index: ixp400-eth/ixp400_eth.c
+===================================================================
+--- ixp400-eth.orig/ixp400_eth.c	2006-08-08 14:26:02.000000000 +0200
++++ ixp400-eth/ixp400_eth.c	2006-08-08 14:26:50.000000000 +0200
+@@ -476,7 +476,7 @@
+     {
+ #if IX_ETH_ACC_NUMBER_OF_PORTS > 0
+ 	.name 	= MODULE_NAME,
+-#if CONFIG_IXP400_ETH_NPEC_ONLY
++#ifdef CONFIG_IXP400_ETH_NPEC_ONLY
+ 	.id   	= IX_ETH_PORT_2,
+ #else
+ 	.id   	= IX_ETH_PORT_1,
+@@ -489,7 +489,7 @@
+     },
+     {
+ 	.name 	= MODULE_NAME,
+-#if CONFIG_IXP400_ETH_NPEC_ONLY
++#ifdef CONFIG_IXP400_ETH_NPEC_ONLY
+ 	.id   	= IX_ETH_PORT_1,
+ #else
+ 	.id   	= IX_ETH_PORT_2,
