@@ -100,7 +100,7 @@ MA_DIR ?= /usr/share/modass
 
 kdist_clean: prep-deb-files
 	dh_clean
-	-find $(OSAL_DIR)/lib $(XSCALE_SW_DIR)/lib \( -name '*.d' -o -name '*.o' -o -name '*.a' \) -exec rm -f {} +
+	rm -rf $(OSAL_DIR)/lib $(XSCALE_SW_DIR)/lib
 
 kdist_config: prep-deb-files
 kdist_configure: kdist_config
@@ -113,7 +113,8 @@ binary-modules: kdist_config
 	$(MAKE) -C $(OSAL_DIR) $(OSAL_FLAGS) module
 	$(MAKE) -C $(XSCALE_SW_DIR) $(XSCALE_SW_FLAGS) ixp400
 	dh_installdirs
-	install -m644 -b -D $(XSCALE_SW_DIR)/lib/$(IX_TARGET)/ixp400.ko $(CURDIR)/debian/$(PKGNAME)/lib/modules/$(KVERS)/ixp400/ixp400.ko
+	install -m644 -D $(XSCALE_SW_DIR)/lib/$(IX_TARGET)/ixp400.ko $(CURDIR)/debian/$(PKGNAME)/lib/modules/$(KVERS)/ixp400/ixp400.ko
+	install -m644 -D $(XSCALE_SW_DIR)/lib/$(IX_TARGET)/Modules.symvers $(CURDIR)/debian/$(PKGNAME)-dev/usr/src/linux-headers-$(KVERS)/ixp400.symvers
 	dh_installdocs 
 	dh_installchangelogs
 	dh_install

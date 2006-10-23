@@ -16,3 +16,13 @@ Description:  Linux kernel module for the Intel IXP400 hardware access library
  If you compiled a custom kernel, you will most likely need to compile
  a custom version of this module as well. The ixp400-accesslib-source
  package has been provided for this purpose.
+
+Package: ixp400-accesslib-module-_KVERS_-dev
+Architecture: arm
+Recommends: ixp400-accesslib-dev
+Description:  Module version information for the Intel IXP400 hardware access library
+ This package provides support for microprocessors in the Intel IXP400
+ product line.
+ .
+ This package contains the module version information needed to build
+ other kernel modules using the ixp400 module.

@@ -66,17 +66,13 @@ The microcode can be downloaded from
 
 You need the NPE Microcode version 2.1 (without crypto). This gives
 you a file named IPL_ixp400NpeLibrary-2_1.zip. A microcode blob must
-be built from this.
-
-First, unpack the module sources:
+be built from this:
 
   $ cd /usr/src
   $ tar xjf /usr/src/ixp400-accesslib.tar.bz2
-
-Then convert the microcode:
-
-  $ cd /usr/src/modules/ixp400-accesslib
-  $ ./debian/rules microcode
+  $ cd modules/ixp400-accesslib
+  $ unzip ~/IPL_ixp400NpeLibrary-2_1.zip
+  $ debian/rules microcode
 
 This leaves you with the file
 
@@ -88,5 +84,4 @@ automatically. It can also be loaded manually:
 
   root@slug:~# cat /lib/firmware/IxNpeMicrocode.dat > /dev/ixNpe
 
-
- -- Marcus Better <marcus@better.se>, Tue,  1 Aug 2006 15:14:18 +0200
+ -- Marcus Better <marcus@better.se>, Wed,  9 Aug 2006 08:46:15 +0200
