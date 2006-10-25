@@ -88,11 +88,6 @@ typedef UINT32	BOOL;	/**< alias for UINT32 */
 #error "Non supported Linux kernel version"
 #endif /* KERNEL_VERSION */
 
-#if defined (CONFIG_CPU_IXP46X) || defined (CONFIG_ARCH_IXP465)
-#undef __ixp46X
-#define __ixp46X
-#endif /* CONFIG_CPU_IXP46X */
-
 /* Default stack limit is 10 KB */
 #define IX_OSAL_OS_THREAD_DEFAULT_STACK_SIZE  (10240) 
 
