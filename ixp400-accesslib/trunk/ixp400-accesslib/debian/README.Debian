@@ -27,14 +27,14 @@ pre-built Debian kernel package. You need the appropriate linux-header
 packages. These must be converted with dpkg-cross (1.30 or later) if
 you are cross-compiling:
 
-  $ sudo dpkg-cross -a arm -i linux-headers-2.6.17-1_2.6.17-2_arm.deb
-  $ sudo dpkg-cross -a arm -i linux-headers-2.6.17-1-nslu2_2.6.17-2_arm.deb
+  $ sudo dpkg-cross -a arm -i linux-headers-2.6.17-2_2.6.17-9_arm.deb
+  $ sudo dpkg-cross -a arm -i linux-headers-2.6.17-2-ixp4xx2_2.6.17-9_arm.deb
   $ sudo apt-get install linux-kbuild-2.6.17
   $ sudo ln -s /usr/src/linux-kbuild-2.6.17 /usr/arm-linux-gnu/src
 
   $ MA_DIR=~/modass         (choose any work directory for m-a)
   $ CROSS_COMPILE=arm-linux-gnu- module-assistant -u $MA_DIR \
-	-k /usr/arm-linux-gnu/src/linux-headers-2.6.17-1-nslu2 \
+	-k /usr/arm-linux-gnu/src/linux-headers-2.6.17-2-ixp4xx \
 	build ixp400-accesslib
 
 
@@ -84,4 +84,4 @@ automatically. It can also be loaded manually:
 
   root@slug:~# cat /lib/firmware/IxNpeMicrocode.dat > /dev/ixNpe
 
- -- Marcus Better <marcus@better.se>, Wed,  9 Aug 2006 08:46:15 +0200
+ -- Marcus Better <marcus@better.se>, Wed, 25 Oct 2006 11:20:33 +0200
