@@ -60,6 +60,7 @@ linux-kernel-headers_${HEADERS_VERSION}_${ARCH}.deb:
 	wget ${DEBIAN_POOL}/main/l/linux-kernel-headers/linux-kernel-headers_${HEADERS_VERSION}_${ARCH}.deb
 
 binutils-${ARCH}-linux-gnu_${BINUTILS_VERSION}_${HOST_ARCH}.deb: binutils_${BINUTILS_SOURCE_VERSION}.dsc
+	sudo aptitude -y install fakeroot dpkg-cross
 	sudo apt-get -y build-dep binutils
 	dpkg-source -x binutils_${BINUTILS_SOURCE_VERSION}.dsc
 	( cd ${BINUTILS_DIR} ; \
