@@ -1,0 +1,63 @@
+---
+ packages/flash-kernel/README       |    1 +
+ packages/flash-kernel/flash-kernel |   35 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 36 insertions(+)
+
+Index: d-i/packages/flash-kernel/flash-kernel
+===================================================================
+--- d-i.orig/packages/flash-kernel/flash-kernel
++++ d-i/packages/flash-kernel/flash-kernel
+@@ -170,6 +170,41 @@
+ 		) > $mtdramdisk || error "failed."
+ 		echo "done." >&2
+ 	;;
++	"Iomega NAS 100d")
++		case "$(dpkg --print-architecture)" in
++			arm)
++				little_endian=1
++			;;
++			armeb)
++				little_endian=0
++			;;
++		esac
++		mtdkernel=$(mtdblock kernel)
++		if [ -z "$mtdkernel" ]; then
++			error "Cannot find mtd partition 'kernel'"
++		fi
++		mtdramdisk=$(mtdblock filesystem)
++		if [ -z "$mtdramdisk" ]; then
++			error "Cannot find mtd partition 'filesystem'"
++		fi
++		printf "Flashing kernel: " >&2
++		(
++			nslu2_swap $kfile
++		) > "$mtdkernel" || error "failed."
++		echo "done." >&2
++		# %%% FIXME: Update FIS directory for kernel %%%
++		printf "Flashing initramfs: " >&2
++		size=$(grep "ramdisk" /proc/mtd | cut -d " " -f 2)
++		size=$(printf "%d" 0x$size)
++		isize=$(wc -c $ifile | awk '{print $1}')
++		pad=$(expr $size - $isize)
++		(
++			nslu2_swap $ifile
++			dd if=/dev/zero bs=$pad count=1 2>/dev/null
++		) > $mtdramdisk || error "failed."
++		# %%% FIXME: Update FIS directory for filesystem %%%
++		echo "done." >&2
++	;;
+ 	*)
+ 		error "Unsupported platform."
+ 	;;
+Index: d-i/packages/flash-kernel/README
+===================================================================
+--- d-i.orig/packages/flash-kernel/README
++++ d-i/packages/flash-kernel/README
+@@ -18,6 +18,7 @@
+ 
+  - Linksys NSLU2
+  - Thecus N2100
++ - Iomega NAS 100d
+ 
+ If you would like to see support for another device, please file a bug
+ report in the Debian Bug Tracking System and include all information
