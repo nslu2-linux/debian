@@ -1,0 +1,3 @@
+config.ixp4xx.patch
+arm-nas100d-maclist.patch
+nas100d-support.patch
