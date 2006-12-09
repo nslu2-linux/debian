@@ -1,0 +1,4 @@
+config.ixp4xx.patch
+nas100d-support.patch
+ixp4xx-2.6.19-cleanup.patch
+ixp4xx-2.6.19-support.patch
