@@ -1,7 +1,7 @@
 LINUX_VERSION = 2.6.19
 # LINUX_VERSION = 2.6.18-6
 # LINUX_VERSION = 2.6.17-9
-KERNEL_ABI = 2.6.19
+KERNEL_ABI = 2.6.19-1
 # KERNEL_ABI = 2.6.18-3
 # KERNEL_ABI = 2.6.17-2
 
@@ -24,20 +24,23 @@ packages:
 	)
 
 clean-kernel:
-	( cd linux-2.6-${LINUX_VERSION} ; fakeroot debian/rules clean )
+	( cd linux-2.6-${KERNEL_ABI} ; fakeroot debian/rules clean )
 	rm -f linux-image-*-ixp4xx_${LINUX_VERSION}_arm.deb
 
-linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_VERSION}_arm.deb: linux-2.6-${LINUX_VERSION}/debian/rules
-	( cd linux-2.6-${LINUX_VERSION} ; \
+linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_VERSION}_arm.deb: linux-2.6-${KERNEL_ABI}/debian/rules
+	( cd linux-2.6-${KERNEL_ABI} ; \
 	  fakeroot debian/rules debian/build debian/stamps debian/control ; \
 	  fakeroot make -f debian/rules.gen binary-arch-arm-none-ixp4xx )
 
 ifeq (${LINUX_VERSION},2.6.19)
 
-linux-2.6-${LINUX_VERSION}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz patches/kernel/${LINUX_VERSION}/series
+linux-2.6-${KERNEL_ABI}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz patches/kernel/${LINUX_VERSION}/series
+	rm -rf linux-2.6-${KERNEL_ABI}
 	tar zxf downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz
-	( cd linux-2.6-${LINUX_VERSION} ; \
+	( cd linux-2.6-${KERNEL_ABI} ; \
+	  rm -rf debian ; \
 	  svn export svn://svn.debian.org/kernel/dists/trunk/linux-2.6/debian debian ; \
+	  rm -f patches ; \
 	  ln -s ../patches/kernel/${LINUX_VERSION} patches ; \
 	  quilt push -a )
 
@@ -48,10 +51,10 @@ downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz:
 
 else
 
-linux-2.6-${LINUX_VERSION}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.dsc patches/kernel/${LINUX_VERSION}/series
-	dpkg-source -x downloads/linux-2.6_${LINUX_VERSION}.dsc linux-2.6-${LINUX_VERSION}
+linux-2.6-${KERNEL_ABI}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.dsc patches/kernel/${LINUX_VERSION}/series
+	dpkg-source -x downloads/linux-2.6_${LINUX_VERSION}.dsc linux-2.6-${KERNEL_ABI}
 	rm -f linux-2.6_*.orig.tar.gz
-	( cd linux-2.6-${LINUX_VERSION} ; \
+	( cd linux-2.6-${KERNEL_ABI} ; \
 	  ln -s ../patches/kernel/${LINUX_VERSION} patches ; \
 	  quilt push -a )
 
@@ -71,5 +74,5 @@ update:
 	( cd nslu2-utils ; svn up )
 
 clobber:
-	rm -rf linux-2.6-${LINUX_VERSION} linux-2.6_*.orig.tar.gz
+	rm -rf linux-2.6-${KERNEL_ABI} linux-2.6_*.orig.tar.gz
 	rm -f linux-{image,headers}-*-ixp4xx_${LINUX_VERSION}_arm.deb
