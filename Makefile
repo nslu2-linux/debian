@@ -44,7 +44,8 @@ linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.t
 	tar zxf downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz
 	( cd linux-2.6-${LINUX_DIR} ; \
 	  rm -rf debian ; \
-	  svn export svn://svn.debian.org/kernel/dists/trunk/linux-2.6/debian debian ; \
+	  ( svn export svn://svn.debian.org/kernel/dists/trunk/linux-2.6/debian debian | \
+	    cp -rip ../kernel/linux-2.6/debian debian ) ; \
 	  rm -f patches ; \
 	  ln -s ../patches/kernel/${LINUX_VERSION} patches ; \
 	  quilt push -a )
