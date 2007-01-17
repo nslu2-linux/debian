@@ -1,6 +1,10 @@
-LINUX_VERSION = 2.6.19
-LINUX_DIR = 2.6.19
-KERNEL_ABI = 2.6.19-1
+LINUX_VERSION = 2.6.20~rc5
+LINUX_DIR = 2.6.20~rc5
+KERNEL_ABI = 2.6.20-1
+
+# LINUX_VERSION = 2.6.19
+# LINUX_DIR = 2.6.19
+# KERNEL_ABI = 2.6.19-1
 
 # LINUX_VERSION = 2.6.18-6
 # LINUX_DIR = 2.6.18-3
@@ -35,9 +39,10 @@ clean-kernel:
 linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_VERSION}_arm.deb: linux-2.6-${LINUX_DIR}/debian/rules
 	( cd linux-2.6-${LINUX_DIR} ; \
 	  fakeroot debian/rules debian/build debian/stamps debian/control ; \
-	  fakeroot make -f debian/rules.gen binary-indep binary-arch-arm-none-ixp4xx )
+	  fakeroot make -f debian/rules.gen binary-arch-arm-none-ixp4xx ; \
+	  fakeroot make -f debian/rules.gen binary-indep )
 
-ifeq (${LINUX_VERSION},2.6.19)
+ifeq (${LINUX_VERSION},2.6.20~rc5)
 
 linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz patches/kernel/${LINUX_VERSION}/series
 	rm -rf linux-2.6-${LINUX_DIR}
