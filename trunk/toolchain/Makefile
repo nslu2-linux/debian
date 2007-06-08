@@ -25,6 +25,24 @@ all: \
 	libc6-dev-${ARCH}-cross_${LIBC6_VERSION}_all.deb \
 	gcc-4.1-${ARCH}-linux-gnu_${GCC41_VERSION}_${HOST_ARCH}.deb
 
+install:
+	sudo dpkg -i \
+		binutils-${ARCH}-linux-gnu_${BINUTILS_VERSION}_${HOST_ARCH}.deb \
+		linux-kernel-headers-${ARCH}-cross_${HEADERS_VERSION}_all.deb \
+		libc6-${ARCH}-cross_${LIBC6_VERSION}_all.deb \
+		libc6-dev-${ARCH}-cross_${LIBC6_VERSION}_all.deb \
+		libgcc1-${ARCH}-cross_${GCC41_VERSION}_all.deb \
+		gcc-4.1-${ARCH}-linux-gnu_${GCC41_VERSION}_${HOST_ARCH}.deb
+
+uninstall:
+	sudo dpkg -r \
+		binutils-${ARCH}-linux-gnu \
+		linux-kernel-headers-${ARCH}-cross \
+		libc6-${ARCH}-cross \
+		libc6-dev-${ARCH}-cross \
+		gcc-4.1-${ARCH}-linux-gnu \
+		libgcc1-${ARCH}-cross
+
 gcc-4.1-${ARCH}-linux-gnu_${GCC41_VERSION}_${HOST_ARCH}.deb: gcc-4.1_${GCC41_SOURCE_VERSION}.dsc
 	sudo apt-get -y build-dep gcc-4.1
 	dpkg-source -x gcc-4.1_${GCC41_SOURCE_VERSION}.dsc
