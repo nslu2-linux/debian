@@ -1,6 +1,10 @@
-LINUX_VERSION = 2.6.20~rc5
-LINUX_DIR = 2.6.20~rc5
-KERNEL_ABI = 2.6.20-1
+LINUX_VERSION = 2.6.22~rc4
+LINUX_DIR = 2.6.22~rc4
+KERNEL_ABI = 2.6.22-1
+
+# LINUX_VERSION = 2.6.20~rc5
+# LINUX_DIR = 2.6.20~rc5
+# KERNEL_ABI = 2.6.20-1
 
 # LINUX_VERSION = 2.6.19
 # LINUX_DIR = 2.6.19
@@ -42,7 +46,7 @@ linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_VERSION}_arm.deb: linux-2.6-${LINUX_DIR
 	  fakeroot make -f debian/rules.gen binary-arch-arm-none-ixp4xx ; \
 	  fakeroot make -f debian/rules.gen binary-indep )
 
-ifeq (${LINUX_VERSION},2.6.20~rc5)
+ifeq (${LINUX_VERSION},2.6.22~rc4)
 
 linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz patches/kernel/${LINUX_VERSION}/series
 	rm -rf linux-2.6-${LINUX_DIR}
@@ -50,10 +54,13 @@ linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.t
 	( cd linux-2.6-${LINUX_DIR} ; \
 	  rm -rf debian ; \
 	  ( svn export svn://svn.debian.org/kernel/dists/trunk/linux-2.6/debian debian || \
-	    cp -rip ../kernel/linux-2.6/debian debian ) ; \
+	    cp -rip ../kernel/linux-2.6/debian debian ) )
+	[ ! -e patches/kernel/${LINUX_VERSION}/series ] || \
+	( cd linux-2.6-${LINUX_DIR} ; \
 	  rm -f patches ; \
 	  ln -s ../patches/kernel/${LINUX_VERSION} patches ; \
 	  quilt push -a )
+	touch $@
 
 downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz:
 	[ -e downloads ] || [ mkdir -p downloads
