@@ -1,6 +1,7 @@
+LINUX_REVISION = 2.6.22~rc4-1~experimental.1
 LINUX_VERSION = 2.6.22~rc4
 LINUX_DIR = 2.6.22~rc4
-KERNEL_ABI = 2.6.22-1
+KERNEL_ABI = 2.6.22-rc4
 
 # LINUX_VERSION = 2.6.20~rc5
 # LINUX_DIR = 2.6.20~rc5
@@ -18,7 +19,7 @@ KERNEL_ABI = 2.6.22-1
 # LINUX_DIR = 2.6.17-2
 # KERNEL_ABI = 2.6.17-2
 
-all: linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_VERSION}_arm.deb
+all: linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_arm.deb
 
 DEBIAN_POOL = http://debian.planetmirror.com/debian/pool
 
@@ -38,9 +39,9 @@ packages:
 
 clean-kernel:
 	( cd linux-2.6-${LINUX_DIR} ; fakeroot debian/rules clean )
-	rm -f linux-image-*-ixp4xx_${LINUX_VERSION}_arm.deb
+	rm -f linux-image-*-ixp4xx_${LINUX_REVISION}_arm.deb
 
-linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_VERSION}_arm.deb: linux-2.6-${LINUX_DIR}/debian/rules
+linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_arm.deb: linux-2.6-${LINUX_DIR}/debian/rules
 	( cd linux-2.6-${LINUX_DIR} ; \
 	  fakeroot debian/rules debian/build debian/stamps debian/control ; \
 	  fakeroot make -f debian/rules.gen binary-arch-arm-none-ixp4xx ; \
@@ -93,4 +94,4 @@ update:
 
 clobber:
 	rm -rf linux-2.6-${LINUX_DIR} linux-2.6_*.orig.tar.gz
-	rm -f linux-{image,headers}-*-ixp4xx_${LINUX_VERSION}_arm.deb
+	rm -f linux-{image,headers}-*-ixp4xx_${LINUX_REVISION}_arm.deb
