@@ -49,7 +49,7 @@ linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_arm.deb: linux-2.6-${LINUX_DI
 
 ifeq (${LINUX_VERSION},2.6.22~rc4)
 
-linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz patches/kernel/${LINUX_VERSION}/series
+linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz
 	rm -rf linux-2.6-${LINUX_DIR}
 	tar zxf downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz
 	( cd linux-2.6-${LINUX_DIR} ; \
@@ -64,13 +64,13 @@ linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.t
 	touch $@
 
 downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz:
-	[ -e downloads ] || [ mkdir -p downloads
+	[ -e downloads ] || mkdir -p downloads
 	( cd downloads ; \
 	  wget ${KERNEL_POOL}/main/l/linux-2.6/linux-2.6_${LINUX_VERSION}.orig.tar.gz )
 
 else
 
-linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.dsc patches/kernel/${LINUX_VERSION}/series
+linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.dsc
 	dpkg-source -x downloads/linux-2.6_${LINUX_VERSION}.dsc linux-2.6-${LINUX_DIR}
 	rm -f linux-2.6_*.orig.tar.gz
 	( cd linux-2.6-${LINUX_DIR} ; \
@@ -94,4 +94,4 @@ update:
 
 clobber:
 	rm -rf linux-2.6-${LINUX_DIR} linux-2.6_*.orig.tar.gz
-	rm -f linux-{image,headers}-*-ixp4xx_${LINUX_REVISION}_arm.deb
+	rm -f linux-*_${LINUX_REVISION}_*.deb
