@@ -1,0 +1,15 @@
+---
+ kernel-versions |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-kernel-di-arm-2.6-2.6.21/kernel-versions
+===================================================================
+--- linux-kernel-di-arm-2.6-2.6.21.orig/kernel-versions
++++ linux-kernel-di-arm-2.6-2.6.21/kernel-versions
+@@ -1,4 +1,4 @@
+ # arch  version   flavour     installedname        suffix  build-depends
+-arm     2.6.21-2  footbridge  2.6.21-2-footbridge  y       linux-image-2.6.21-2-footbridge
+-arm     2.6.21-2  iop32x      2.6.21-2-iop32x      y       linux-image-2.6.21-2-iop32x
++# arm     2.6.21-2  footbridge  2.6.21-2-footbridge  y       linux-image-2.6.21-2-footbridge
++# arm     2.6.21-2  iop32x      2.6.21-2-iop32x      y       linux-image-2.6.21-2-iop32x
+ arm     2.6.21-2  ixp4xx      2.6.21-2-ixp4xx      y       linux-image-2.6.21-2-ixp4xx

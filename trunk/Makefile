@@ -1,7 +1,12 @@
-LINUX_REVISION = 2.6.22~rc4-1~experimental.1
-LINUX_VERSION = 2.6.22~rc4
-LINUX_DIR = 2.6.22~rc4
-KERNEL_ABI = 2.6.22-rc4
+# LINUX_REVISION = 2.6.22~rc7-1~experimental.1
+# LINUX_VERSION = 2.6.22~rc7
+# LINUX_DIR = 2.6.22~rc7
+# KERNEL_ABI = 2.6.22-rc7
+
+LINUX_REVISION = 2.6.21-6
+LINUX_VERSION = 2.6.21-6
+LINUX_DIR = 2.6.21
+KERNEL_ABI = 2.6.21-2
 
 # LINUX_VERSION = 2.6.20~rc5
 # LINUX_DIR = 2.6.20~rc5
@@ -18,6 +23,8 @@ KERNEL_ABI = 2.6.22-rc4
 # LINUX_VERSION = 2.6.17-9
 # LINUX_DIR = 2.6.17-2
 # KERNEL_ABI = 2.6.17-2
+
+LINUX_KERNEL_DI_ARM_VERSION = 1.16
 
 all: linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_arm.deb
 
@@ -37,6 +44,24 @@ packages:
 	  done \
 	)
 
+di: linux-kernel-di-arm-2.6-${LINUX_DIR}/debian/rules
+	( cd linux-kernel-di-arm-2.6-${LINUX_DIR} ; \
+	  dpkg-buildpackage -rfakeroot -d -b )
+
+linux-kernel-di-arm-2.6-${LINUX_DIR}/debian/rules: downloads/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc
+	dpkg-source -x downloads/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc linux-kernel-di-arm-2.6-${LINUX_DIR}
+	( cd linux-kernel-di-arm-2.6-${LINUX_DIR} ; \
+	  ln -s ../patches/kernel-di-arm/${LINUX_VERSION} patches ; \
+	  [ ! -e patches/series ] || quilt push -a )
+
+downloads/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc:
+	[ -e downloads ] || mkdir -p downloads
+	( cd downloads ; \
+	  wget ${DEBIAN_POOL}/main/l/linux-kernel-di-arm-2.6/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc ; \
+	  for f in `grep -A 2 "^Files:" linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc | tail -2 | awk '{ print $$3; }'` ; do \
+	    wget ${DEBIAN_POOL}/main/l/linux-kernel-di-arm-2.6/$$f ; \
+	  done )
+
 clean-kernel:
 	( cd linux-2.6-${LINUX_DIR} ; fakeroot debian/rules clean )
 	rm -f linux-image-*-ixp4xx_${LINUX_REVISION}_arm.deb
@@ -47,7 +72,7 @@ linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_arm.deb: linux-2.6-${LINUX_DI
 	  fakeroot make -f debian/rules.gen binary-arch-arm-none-ixp4xx ; \
 	  fakeroot make -f debian/rules.gen binary-indep )
 
-ifeq (${LINUX_VERSION},2.6.22~rc4)
+ifeq (${LINUX_VERSION},2.6.22~rc7)
 
 linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz
 	rm -rf linux-2.6-${LINUX_DIR}
@@ -60,7 +85,7 @@ linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.t
 	( cd linux-2.6-${LINUX_DIR} ; \
 	  rm -f patches ; \
 	  ln -s ../patches/kernel/${LINUX_VERSION} patches ; \
-	  quilt push -a )
+	  [ ! -e patches/series ] || quilt push -a )
 	touch $@
 
 downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz:
@@ -75,7 +100,7 @@ linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.dsc
 	rm -f linux-2.6_*.orig.tar.gz
 	( cd linux-2.6-${LINUX_DIR} ; \
 	  ln -s ../patches/kernel/${LINUX_VERSION} patches ; \
-	  quilt push -a )
+	  [ ! -e patches/series ] || quilt push -a )
 
 downloads/linux-2.6_${LINUX_VERSION}.dsc:
 	[ -e downloads ] || mkdir -p downloads
