@@ -77,39 +77,13 @@ Index: linux-2.6-2.6.21/debian/arch/arm/config.ixp4xx
  CONFIG_IXP4XX_CRYPTO=m
  # CONFIG_HAPPYMEAL is not set
  # CONFIG_SUNGEM is not set
-@@ -840,7 +840,7 @@
- #
- # CONFIG_NET_TULIP is not set
- # CONFIG_HP100 is not set
--# CONFIG_NET_PCI is not set
-+CONFIG_NET_PCI=y
- 
- #
- # Ethernet (1000 Mbit)
 @@ -855,6 +855,7 @@
  # CONFIG_SKGE is not set
  # CONFIG_SKY2 is not set
  # CONFIG_TIGON3 is not set
-+CONFIG_VIA_VELOCITY=m
+-CONFIG_VIA_VELOCITY=m
++CONFIG_VIA_VELOCITY=y
  # CONFIG_BNX2 is not set
- 
- #
-@@ -953,7 +954,7 @@
- CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
- # CONFIG_INPUT_JOYDEV is not set
- # CONFIG_INPUT_TSDEV is not set
--CONFIG_INPUT_EVDEV=m
-+CONFIG_INPUT_EVDEV=y
- 
- #
- # Input Device Drivers
-@@ -971,7 +972,7 @@
- # CONFIG_INPUT_JOYSTICK is not set
- # CONFIG_INPUT_TOUCHSCREEN is not set
- CONFIG_INPUT_MISC=y
--CONFIG_INPUT_IXP4XX_BEEPER=m
-+CONFIG_INPUT_IXP4XX_BEEPER=y
- CONFIG_INPUT_UINPUT=m
  
  #
 @@ -1528,7 +1529,7 @@
