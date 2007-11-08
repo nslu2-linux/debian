@@ -1,8 +1,8 @@
 ---
- debian/arch/arm/config.ixp4xx                     |    2 
+ debian/arch/arm/config.ixp4xx                     |    5 
  debian/patches/features/arm/dsmg600-support.patch |  542 ++++++++++++++++++++++
  debian/patches/series/6                           |    1 
- 3 files changed, 545 insertions(+)
+ 3 files changed, 547 insertions(+), 1 deletion(-)
 
 Index: linux-2.6-2.6.21/debian/patches/features/arm/dsmg600-support.patch
 ===================================================================
@@ -578,3 +578,20 @@ Index: linux-2.6-2.6.21/debian/arch/arm/config.ixp4xx
  
  #
  # Multi-device support (RAID and LVM)
+@@ -838,7 +840,7 @@
+ #
+ # CONFIG_NET_TULIP is not set
+ # CONFIG_HP100 is not set
+-# CONFIG_NET_PCI is not set
++CONFIG_NET_PCI=y
+ 
+ #
+ # Ethernet (1000 Mbit)
+@@ -853,6 +855,7 @@
+ # CONFIG_SKGE is not set
+ # CONFIG_SKY2 is not set
+ # CONFIG_TIGON3 is not set
++CONFIG_VIA_VELOCITY=m
+ # CONFIG_BNX2 is not set
+ 
+ #
