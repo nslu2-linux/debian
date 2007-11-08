@@ -49,6 +49,7 @@ di: linux-kernel-di-arm-2.6-${LINUX_DIR}/debian/rules
 	  dpkg-buildpackage -rfakeroot -d -b )
 
 linux-kernel-di-arm-2.6-${LINUX_DIR}/debian/rules: downloads/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc
+	rm -rf linux-kernel-di-arm-2.6-${LINUX_DIR}
 	dpkg-source -x downloads/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc linux-kernel-di-arm-2.6-${LINUX_DIR}
 	( cd linux-kernel-di-arm-2.6-${LINUX_DIR} ; \
 	  ln -s ../patches/kernel-di-arm/${LINUX_VERSION} patches ; \
@@ -96,6 +97,7 @@ downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz:
 else
 
 linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.dsc
+	rm -rf linux-2.6-${LINUX_DIR}
 	dpkg-source -x downloads/linux-2.6_${LINUX_VERSION}.dsc linux-2.6-${LINUX_DIR}
 	rm -f linux-2.6_*.orig.tar.gz
 	( cd linux-2.6-${LINUX_DIR} ; \
@@ -118,5 +120,6 @@ update:
 	( cd nslu2-utils ; svn up )
 
 clobber:
-	rm -rf linux-2.6-${LINUX_DIR} linux-2.6_*.orig.tar.gz
-	rm -f linux-*_${LINUX_REVISION}_*.deb
+	rm -rf linux-2.6-${LINUX_DIR}
+	rm -rf linux-kernel-di-arm-2.6-${LINUX_DIR}
+	rm -f linux-*.deb linux-*.changes
