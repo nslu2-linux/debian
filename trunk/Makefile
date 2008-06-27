@@ -1,36 +1,17 @@
-# LINUX_REVISION = 2.6.22~rc7-1~experimental.1
-# LINUX_VERSION = 2.6.22~rc7
-# LINUX_DIR = 2.6.22~rc7
-# KERNEL_ABI = 2.6.22-rc7
+LINUX_REVISION = 2.6.26~rc7-1~experimental.1
+LINUX_VERSION = 2.6.26~rc7
+LINUX_DIR = 2.6.26~rc7
+KERNEL_ABI = 2.6.26-rc7
 
-LINUX_REVISION = 2.6.21-6
-LINUX_VERSION = 2.6.21-6
-LINUX_DIR = 2.6.21
-KERNEL_ABI = 2.6.21-2
-
-# LINUX_VERSION = 2.6.20~rc5
-# LINUX_DIR = 2.6.20~rc5
-# KERNEL_ABI = 2.6.20-1
-
-# LINUX_VERSION = 2.6.19
-# LINUX_DIR = 2.6.19
-# KERNEL_ABI = 2.6.19-1
-
-# LINUX_VERSION = 2.6.18-6
-# LINUX_DIR = 2.6.18-3
-# KERNEL_ABI = 2.6.18-3
-
-# LINUX_VERSION = 2.6.17-9
-# LINUX_DIR = 2.6.17-2
-# KERNEL_ABI = 2.6.17-2
+DEB_BUILD_ARCH = armel
 
 LINUX_KERNEL_DI_ARM_VERSION = 1.16
 
-all: linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_arm.deb
+all: linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_${DEB_BUILD_ARCH}.deb
 
 DEBIAN_POOL = http://debian.planetmirror.com/debian/pool
 
-KERNEL_POOL = http://kernel-archive.buildserver.net/debian-kernel/pool
+KERNEL_SITE = http://photon.itp.tuwien.ac.at/~mattems/
 
 .PHONY: toolchain
 toolchain:
@@ -44,36 +25,36 @@ packages:
 	  done \
 	)
 
-di: linux-kernel-di-arm-2.6-${LINUX_DIR}/debian/rules
-	( cd linux-kernel-di-arm-2.6-${LINUX_DIR} ; \
+di: linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}/debian/rules
+	( cd linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR} ; \
 	  dpkg-buildpackage -rfakeroot -d -b )
 
-linux-kernel-di-arm-2.6-${LINUX_DIR}/debian/rules: downloads/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc
-	rm -rf linux-kernel-di-arm-2.6-${LINUX_DIR}
-	dpkg-source -x downloads/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc linux-kernel-di-arm-2.6-${LINUX_DIR}
-	( cd linux-kernel-di-arm-2.6-${LINUX_DIR} ; \
-	  ln -s ../patches/kernel-di-arm/${LINUX_VERSION} patches ; \
+linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}/debian/rules: downloads/linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc
+	rm -rf linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}
+	dpkg-source -x downloads/linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}
+	( cd linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR} ; \
+	  ln -s ../patches/kernel-di-${DEB_BUILD_ARCH}/${LINUX_VERSION} patches ; \
 	  [ ! -e patches/series ] || quilt push -a )
 
-downloads/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc:
+downloads/linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc:
 	[ -e downloads ] || mkdir -p downloads
 	( cd downloads ; \
-	  wget ${DEBIAN_POOL}/main/l/linux-kernel-di-arm-2.6/linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc ; \
-	  for f in `grep -A 2 "^Files:" linux-kernel-di-arm-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc | tail -2 | awk '{ print $$3; }'` ; do \
-	    wget ${DEBIAN_POOL}/main/l/linux-kernel-di-arm-2.6/$$f ; \
+	  wget ${DEBIAN_POOL}/main/l/linux-kernel-di-${DEB_BUILD_ARCH}-2.6/linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc ; \
+	  for f in `grep -A 2 "^Files:" linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc | tail -2 | awk '{ print $$3; }'` ; do \
+	    wget ${DEBIAN_POOL}/main/l/linux-kernel-di-${DEB_BUILD_ARCH}-2.6/$$f ; \
 	  done )
 
 clean-kernel:
 	( cd linux-2.6-${LINUX_DIR} ; fakeroot debian/rules clean )
-	rm -f linux-image-*-ixp4xx_${LINUX_REVISION}_arm.deb
+	rm -f linux-image-*-ixp4xx_${LINUX_REVISION}_${DEB_BUILD_ARCH}.deb
 
-linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_arm.deb: linux-2.6-${LINUX_DIR}/debian/rules
+linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_${DEB_BUILD_ARCH}.deb: linux-2.6-${LINUX_DIR}/debian/rules
 	( cd linux-2.6-${LINUX_DIR} ; \
 	  fakeroot debian/rules debian/build debian/stamps debian/control ; \
-	  fakeroot make -f debian/rules.gen binary-arch-arm-none-ixp4xx ; \
+	  fakeroot make -f debian/rules.gen binary-arch_${DEB_BUILD_ARCH}_none_ixp4xx ; \
 	  fakeroot make -f debian/rules.gen binary-indep )
 
-ifeq (${LINUX_VERSION},2.6.22~rc7)
+ifeq (${LINUX_VERSION},2.6.26~rc7)
 
 linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz
 	rm -rf linux-2.6-${LINUX_DIR}
@@ -92,7 +73,7 @@ linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.t
 downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz:
 	[ -e downloads ] || mkdir -p downloads
 	( cd downloads ; \
-	  wget ${KERNEL_POOL}/main/l/linux-2.6/linux-2.6_${LINUX_VERSION}.orig.tar.gz )
+	  wget ${KERNEL_SITE}/linux-2.6_${LINUX_VERSION}.orig.tar.gz )
 
 else
 
@@ -121,5 +102,5 @@ update:
 
 clobber:
 	rm -rf linux-2.6-${LINUX_DIR}
-	rm -rf linux-kernel-di-arm-2.6-${LINUX_DIR}
+	rm -rf linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}
 	rm -f linux-*.deb linux-*.changes
