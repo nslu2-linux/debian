@@ -5,48 +5,11 @@ KERNEL_ABI = 2.6.26-rc8
 
 DEB_BUILD_ARCH = armel
 
-LINUX_KERNEL_DI_ARM_VERSION = 1.16
-
 all: linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_${DEB_BUILD_ARCH}.deb
 
 DEBIAN_POOL = http://debian.planetmirror.com/debian/pool
 
 KERNEL_SITE = http://photon.itp.tuwien.ac.at/~mattems/
-
-.PHONY: toolchain
-toolchain:
-	${MAKE} -C toolchain all
-
-packages:
-	( cd d-i/packages ; \
-	  for f in `find * -type d -prune -print | grep -v '^arch$$'` ; do \
-	    ( sudo apt-get -y build-dep $$f ) ; \
-	    ( cd $$f ; fakeroot debian/rules binary-arch ) ; \
-	  done \
-	)
-
-di: linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}/debian/rules
-	( cd linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR} ; \
-	  dpkg-buildpackage -rfakeroot -d -b )
-
-linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}/debian/rules: downloads/linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc
-	rm -rf linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}
-	dpkg-source -x downloads/linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}
-	( cd linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR} ; \
-	  ln -s ../patches/kernel-di-${DEB_BUILD_ARCH}/${LINUX_VERSION} patches ; \
-	  [ ! -e patches/series ] || quilt push -a )
-
-downloads/linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc:
-	[ -e downloads ] || mkdir -p downloads
-	( cd downloads ; \
-	  wget ${DEBIAN_POOL}/main/l/linux-kernel-di-${DEB_BUILD_ARCH}-2.6/linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc ; \
-	  for f in `grep -A 2 "^Files:" linux-kernel-di-${DEB_BUILD_ARCH}-2.6_${LINUX_KERNEL_DI_ARM_VERSION}.dsc | tail -2 | awk '{ print $$3; }'` ; do \
-	    wget ${DEBIAN_POOL}/main/l/linux-kernel-di-${DEB_BUILD_ARCH}-2.6/$$f ; \
-	  done )
-
-clean-kernel:
-	( cd linux-2.6-${LINUX_DIR} ; fakeroot debian/rules clean )
-	rm -f linux-image-*-ixp4xx_${LINUX_REVISION}_${DEB_BUILD_ARCH}.deb
 
 linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_${DEB_BUILD_ARCH}.deb: linux-2.6-${LINUX_DIR}/debian/rules
 	( cd linux-2.6-${LINUX_DIR} ; \
@@ -95,12 +58,10 @@ downloads/linux-2.6_${LINUX_VERSION}.dsc:
 
 endif
 
-update:
-	( cd kernel ; svn up )
-	( cd d-i ; svn up)
-	( cd nslu2-utils ; svn up )
+clean:
+	( cd linux-2.6-${LINUX_DIR} ; fakeroot debian/rules clean )
+	rm -f linux-image-*-ixp4xx_${LINUX_REVISION}_${DEB_BUILD_ARCH}.deb
 
 clobber:
 	rm -rf linux-2.6-${LINUX_DIR}
-	rm -rf linux-kernel-di-${DEB_BUILD_ARCH}-2.6-${LINUX_DIR}
 	rm -f linux-*.deb linux-*.changes
