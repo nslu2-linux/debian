@@ -1,7 +1,7 @@
-LINUX_REVISION = 2.6.26~rc7-1~experimental.1
-LINUX_VERSION = 2.6.26~rc7
-LINUX_DIR = 2.6.26~rc7
-KERNEL_ABI = 2.6.26-rc7
+LINUX_REVISION = 2.6.26~rc8-1~experimental.1
+LINUX_VERSION = 2.6.26~rc8
+LINUX_DIR = 2.6.26~rc8
+KERNEL_ABI = 2.6.26-rc8
 
 DEB_BUILD_ARCH = armel
 
@@ -54,7 +54,7 @@ linux-image-${KERNEL_ABI}-ixp4xx_${LINUX_REVISION}_${DEB_BUILD_ARCH}.deb: linux-
 	  fakeroot make -f debian/rules.gen binary-arch_${DEB_BUILD_ARCH}_none_ixp4xx ; \
 	  fakeroot make -f debian/rules.gen binary-indep )
 
-ifeq (${LINUX_VERSION},2.6.26~rc7)
+ifeq (${LINUX_VERSION},2.6.26~rc8)
 
 linux-2.6-${LINUX_DIR}/debian/rules: downloads/linux-2.6_${LINUX_VERSION}.orig.tar.gz
 	rm -rf linux-2.6-${LINUX_DIR}
